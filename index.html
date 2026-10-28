@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>¿Quién es más probable?</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#170d24;--card:#261638;--line:#3b2556;--bone:#f4ecdc;--mute:#a995c4;--pump:#ff7a1a;--slime:#a6f26b;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--bone);font:800 17px/1.35 Nunito,system-ui,sans-serif}
+#app{max-width:520px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom))}
+h1{font:400 34px/1.05 Bungee,Impact,sans-serif;margin:28px 0 6px;color:var(--pump)}
+h1 b{color:var(--bone)}
+.sub,.mute{color:var(--mute);font-weight:600}
+input{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--bone);font:inherit}
+input:focus{outline:3px solid var(--pump);border-color:var(--pump)}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:14px 16px;background:var(--line);color:var(--bone);width:100%;margin:6px 0}
+button:focus-visible{outline:3px solid var(--bone)}
+button.pri{background:var(--pump);color:#1b0d00;font-size:19px}
+button:disabled{opacity:.4}
+.row{display:flex;gap:8px}.row>*{flex:1}.row input{flex:2}
+.or{text-align:center;color:var(--mute);margin:14px 0 4px;font-weight:600}
+.err{color:#ff8f8f;min-height:1.4em}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-weight:600;margin-bottom:10px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:4px 12px;color:var(--bone)}
+.q{font:400 27px/1.15 Bungee,Impact,sans-serif;margin:12px 0 18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--line);text-align:left;padding:10px 12px;margin:0}
+.opt .n,.badge{font:400 26px Bungee,Impact,sans-serif;color:var(--pump);min-width:34px;text-align:center}
+.opt.on{border-color:var(--slime);background:#24381b}.opt.on .n{color:var(--slime)}
+.opt span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.players{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.players .chip b{color:var(--pump);font-family:Bungee,Impact,sans-serif;font-weight:400;margin-right:6px}
+.qr{background:#fff;border-radius:14px;padding:8px;width:210px;margin:14px auto}
+.qr svg{display:block;width:100%;height:auto}
+.code{font:400 44px Bungee,Impact,sans-serif;text-align:center;letter-spacing:6px;color:var(--bone)}
+.win{background:var(--slime);color:#10200a;border-radius:16px;padding:16px;text-align:center;margin:12px 0 18px}
+.win .big{font:400 34px/1.1 Bungee,Impact,sans-serif}
+.bar{display:grid;grid-template-columns:36px 1fr 30px;gap:10px;align-items:center;margin:8px 0}
+.bar .t{background:var(--card);border-radius:8px;height:30px;overflow:hidden;position:relative}
+.bar .f{background:var(--pump);height:100%;min-width:4px}
+.bar .t span{position:absolute;left:10px;top:3px;font-weight:800;text-shadow:0 1px 2px #000}
+.bar .v{font:400 20px Bungee,Impact,sans-serif;text-align:right}
+.rank{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){.win{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.9);opacity:0}}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+// ---------- Preguntas (cámbialas o añade las que quieras) ----------
+const Q=[
+"¿Quién es más probable que se líe con alguien esta noche?",
+"¿Quién es más probable que acabe llorando en el baño?",
+"¿Quién es más probable que sobreviva a un apocalipsis zombi?",
+"¿Quién sería el primero en morir en una película de terror?",
+"¿Quién es más probable que se quede dormido en la fiesta?",
+"¿Quién es más probable que le escriba a su ex esta noche?",
+"¿Quién es más probable que se líe con alguien disfrazado de lo que sea?",
+"¿Quién es más probable que sea el último en irse de la fiesta?",
+"¿Quién es más probable que baile encima de una mesa?",
+"¿Quién es más probable que se pierda yendo al baño?",
+"¿Quién es más probable que sea un vampiro de verdad?",
+"¿Quién es más probable que grite al ver un bicho?",
+"¿Quién es más probable que acabe en urgencias por una tontería?",
+"¿Quién es más probable que tenga un fantasma en casa y lo ignore?",
+"¿Quién es más probable que se enamore de alguien esta noche?",
+"¿Quién es más probable que se gaste el sueldo en un viaje improvisado?",
+"¿Quién es más probable que hable solo en voz alta?",
+"¿Quién es más probable que haga un directo en TikTok esta noche?",
+"¿Quién es más probable que llegue tarde a su propia boda?",
+"¿Quién es más probable que invente una excusa para irse antes?",
+"¿Quién es más probable que se haga famoso?",
+"¿Quién es más probable que cante en el karaoke sin que se lo pidan?",
+"¿Quién es más probable que pida pizza a las 4 de la mañana?",
+"¿Quién es más probable que tenga el móvil con la pantalla rota?",
+"¿Quién es más probable que se disfrace en pleno agosto?",
+"¿Quién es más probable que le dé miedo su propia sombra?",
+"¿Quién es más probable que acabe cantando en un coche con desconocidos?",
+"¿Quién es más probable que se líe con el amigo de un amigo?"
+];
+// ---------- Utilidades ----------
+const $=s=>document.querySelector(s),app=$('#app');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const pid=ls.get('pid')||(()=>{const p=Math.random().toString(36).slice(2,10);ls.set('pid',p);return p})();
+let myName=ls.get('name')||'',isHost=false,code='',peer,conn,conns={},H=null,S=null,me=null,myVote=null,err='',cq='',deck=[],busy=false;
+const hashCode=()=>(location.hash||'').replace('#','').toUpperCase().slice(0,4);
+
+// ---------- Anfitrión ----------
+function createGame(){
+  isHost=true;busy=true;err='';render();
+  const c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
+  peer=new Peer('hq-'+c);
+  peer.on('open',()=>{code=c;busy=false;H={phase:'lobby',round:0,q:'',votes:{},res:null,players:[{id:pid,n:1,name:myName,total:0}]};me=1;bc()});
+  peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame()}else{busy=false;isHost=false;err='No se pudo crear la partida. Revisa tu conexión.';render()}});
+  peer.on('connection',c=>{
+    c.on('data',m=>{
+      if(m.t==='join'&&m.pid){
+        let p=H.players.find(x=>x.id===m.pid);
+        if(!p){p={id:m.pid,n:H.players.length+1,name:String(m.name||'?').slice(0,14),total:0};H.players.push(p)}
+        conns[m.pid]=c;c._pid=m.pid;bc();
+      }else if(m.t==='vote'&&H.phase==='vote'&&c._pid&&H.players.some(p=>p.n===m.n)){H.votes[c._pid]=m.n;bc()}
+    });
+  });
+}
+const pub=()=>({phase:H.phase,round:H.round,q:H.q,res:H.res,code,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total}))});
+function bc(){S=pub();for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]??null})}}myVote=H.votes[pid]??null;render()}
+function nextQ(){
+  if(!deck.length)deck=Q.map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  H.q=cq.trim()||deck.pop();cq='';H.round++;H.votes={};H.res=null;H.phase='vote';bc();
+}
+function reveal(){
+  const counts={};Object.values(H.votes).forEach(n=>counts[n]=(counts[n]||0)+1);
+  const max=Math.max(0,...Object.values(counts));
+  H.players.forEach(p=>p.total+=counts[p.n]||0);
+  H.res={counts,max,winners:max?H.players.filter(p=>counts[p.n]===max).map(p=>p.n):[]};
+  H.phase='result';bc();
+}
+
+// ---------- Jugador ----------
+function joinGame(c){
+  code=c;busy=true;err='';render();
+  try{peer&&peer.destroy()}catch(e){}
+  peer=new Peer();
+  peer.on('open',()=>{
+    conn=peer.connect('hq-'+code,{reliable:true});
+    const to=setTimeout(()=>{if(!S){err='No encuentro la partida '+code+'. ¿Está bien el código?';busy=false;render()}},9000);
+    conn.on('open',()=>conn.send({t:'join',pid,name:myName}));
+    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);busy=false;S=m.s;me=m.you;myVote=m.voted;render()}});
+    conn.on('close',()=>{if(S){setTimeout(()=>joinGame(code),1500)}});
+  });
+  peer.on('error',()=>{if(!S){err='No encuentro la partida '+code+'.';busy=false;render()}});
+}
+function vote(n){
+  if(isHost){if(H.phase==='vote'){H.votes[pid]=n;bc()}}
+  else if(conn&&conn.open){conn.send({t:'vote',n});myVote=n;render()}
+}
+
+// ---------- Pantallas ----------
+function render(){
+  if(!S){
+    const hc=hashCode();
+    app.innerHTML=`<h1>¿Quién es más <b>probable</b>?</h1><p class="sub">El juego de Halloween. Cada uno vota desde su móvil.</p>
+    <input id="nm" placeholder="Tu nombre" maxlength="14" value="${esc(myName)}" autocomplete="off">
+    ${busy?'<p class="mute">Conectando…</p>':hc.length===4
+      ?`<button class="pri" data-a="join" data-c="${esc(hc)}">Unirme a la partida ${esc(hc)}</button>`
+      :`<button class="pri" data-a="create">Crear partida</button><div class="or">o entra con un código</div><div class="row"><input id="cd" maxlength="4" placeholder="CÓDIGO" autocomplete="off"><button data-a="join">Unirme</button></div>`}
+    <p class="err">${esc(err)}</p>`;
+    return;
+  }
+  const ps=S.players,total=ps.length,you=ps.find(p=>p.n===me);
+  const chips=ps.map(p=>`<span class="chip"><b>${p.n}</b>${esc(p.name)}${p.n===me?' (tú)':''}</span>`).join('');
+  let h=`<div class="top"><span>${S.round?'Ronda '+S.round:'Sala de espera'}</span><span class="chip">${S.code}</span></div>`;
+  if(S.phase==='lobby'){
+    const url=location.href.split('#')[0]+'#'+S.code;
+    h+=`<h1>Tu número es el <b>${me||'…'}</b></h1>`;
+    if(isHost){
+      let q='';try{const g=qrcode(0,'M');g.addData(url);g.make();q=g.createSvgTag({cellSize:4,margin:1,scalable:true})}catch(e){}
+      h+=`<p class="sub">Que escaneen el QR o entren con el código:</p>${q?`<div class="qr">${q}</div>`:''}<div class="code">${S.code}</div>
+      <p class="mute" style="text-align:center;word-break:break-all">${esc(url)}</p>`;
+    }else h+=`<p class="sub">Esperando a que el anfitrión empiece…</p>`;
+    h+=`<div class="players">${chips}</div>`;
+    if(isHost)h+=`<button class="pri" data-a="next" ${total<2?'disabled':''}>Empezar (${total} jugadores)</button>`;
+  }else if(S.phase==='vote'){
+    h+=`<div class="q">${esc(S.q)}</div><div class="grid">${ps.map(p=>`<button class="opt ${myVote===p.n?'on':''}" data-a="vote" data-n="${p.n}"><span class="n">${p.n}</span><span>${esc(p.name)}${p.n===me?' (tú)':''}</span></button>`).join('')}</div>
+    <p class="mute" style="text-align:center">${myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':'Toca el número de quien creas que es.'}<br>${S.voted} de ${total} han votado</p>`;
+    if(isHost)h+=`<button class="pri" data-a="reveal">Revelar resultados</button>`;
+  }else if(S.phase==='result'){
+    const r=S.res,names=n=>esc((ps.find(p=>p.n===n)||{}).name||'');
+    const sorted=[...ps].sort((a,b)=>(r.counts[b.n]||0)-(r.counts[a.n]||0));
+    h+=`<div class="mute">${esc(S.q)}</div>`;
+    h+=r.max?`<div class="win"><div class="big">${r.winners.map(n=>n+' · '+names(n)).join('<br>')}</div>${r.winners.length>1?'Empate':'Gana'} con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win"><div class="big">Nadie votó</div></div>`;
+    h+=sorted.map(p=>{const v=r.counts[p.n]||0;return`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?v/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${v}</span></div>`}).join('');
+    if(isHost)h+=`<input id="cq" placeholder="Tu propia pregunta (opcional)" value="${esc(cq)}" style="margin-top:18px"><button class="pri" data-a="next">Siguiente pregunta</button><button data-a="rank">Ver ranking</button>`;
+    else h+=`<p class="mute" style="text-align:center">Esperando la siguiente pregunta…</p>`;
+  }else{
+    h+=`<h1>Ranking</h1><p class="sub">Votos recibidos en toda la partida</p>`;
+    h+=[...ps].sort((a,b)=>b.total-a.total).map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="badge">${p.total}</span></div>`).join('');
+    if(isHost)h+=`<button class="pri" data-a="next" style="margin-top:16px">Seguir jugando</button>`;
+  }
+  app.innerHTML=h;
+}
+app.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
+  const a=b.dataset.a,nm=$('#nm');
+  if(nm){myName=nm.value.trim().slice(0,14);ls.set('name',myName)}
+  if(a==='create'||a==='join'){
+    if(!myName){err='Escribe tu nombre primero.';return render()}
+    if(a==='create')return createGame();
+    const c=(b.dataset.c||($('#cd')||{}).value||'').trim().toUpperCase();
+    if(c.length!==4){err='El código tiene 4 letras.';return render()}
+    return joinGame(c);
+  }
+  if(a==='vote')vote(+b.dataset.n);
+  else if(!isHost)return;
+  else if(a==='next')nextQ();
+  else if(a==='reveal')reveal();
+  else if(a==='rank'){H.phase='end';bc()}
+});
+app.addEventListener('input',e=>{if(e.target.id==='cq')cq=e.target.value});
+render();
+</script>
+</body>
+</html>
