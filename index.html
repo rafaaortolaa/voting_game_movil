@@ -198,19 +198,36 @@ function reveal(){
 }
 
 // ---------- Jugador ----------
-function joinGame(c){
+let stage='';
+function setStage(t){stage=t;if(busy&&!S)render()}
+function joinGame(c,retry){
   if(typeof Peer==='undefined'){err='No se pudo cargar PeerJS (¿sin internet o bloqueado?).';return render()}
-  code=c;busy=true;err='';render();keepAwake();
+  code=c;busy=true;err='';stage='1/3 servidor';render();keepAwake();
   try{peer&&peer.destroy()}catch(e){}
+  let opened=false,done=false,to;
+  const fail=async()=>{
+    if(done)return;done=true;
+    if(S){setTimeout(()=>joinGame(c),3000);return}
+    if(!retry&&!opened){return joinGame(c,true)}
+    let reach='no';try{await fetch('https://0.peerjs.com/',{mode:'no-cors',cache:'no-store'});reach='sí'}catch(e){}
+    const st=conn&&conn.peerConnection?conn.peerConnection.iceConnectionState:'-';
+    err=opened?'Llego al servidor pero no al anfitrión ['+st+']. Prueba con otra red (datos o wifi).':'No llego al servidor de conexión [servidor accesible: '+reach+']. Abre el enlace en Chrome y desactiva DNS privado o bloqueadores.';
+    busy=false;render();
+  };
+  to=setTimeout(fail,9000);
   peer=new Peer(OPTS);
   peer.on('open',()=>{
+    opened=true;setStage('2/3 buscando partida');
     conn=peer.connect('hq-'+code,{reliable:true});
-    const to=setTimeout(()=>{if(!S){const st=conn&&conn.peerConnection?conn.peerConnection.iceConnectionState:'sin-conexion';err='No consigo conectar con la partida '+code+' ['+st+']. Prueba otra red o recarga.';busy=false;render()}},9000);
-    conn.on('open',()=>conn.send({t:'join',pid,name:myName}));
-    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);busy=false;S=m.s;me=m.you;myVote=m.voted;render()}});
-    conn.on('close',()=>{if(S){setTimeout(()=>joinGame(code),1500)}});
+    conn.on('open',()=>{setStage('3/3 entrando');conn.send({t:'join',pid,name:myName})});
+    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;me=m.you;myVote=m.voted;render()}});
+    conn.on('close',()=>{if(S&&!done)return;if(S)setTimeout(()=>joinGame(code),1500)});
   });
-  peer.on('error',e=>{if(!S){err=e.type==='peer-unavailable'?'No existe la partida '+code+'. Revisa el código.':'Problema de conexión ['+e.type+'].';busy=false;render()}});
+  peer.on('error',e=>{
+    if(done)return;clearTimeout(to);done=true;
+    if(S){setTimeout(()=>joinGame(c),3000);return}
+    err=e.type==='peer-unavailable'?'No existe la partida '+code+'. Revisa el código.':'Problema de conexión ['+e.type+'].';busy=false;render();
+  });
 }
 function vote(n){
   if(n===me)return;
@@ -229,7 +246,7 @@ function render(){
     const hc=hashCode();
     app.innerHTML=`<h1>¿Quién es más <b>probable</b>?</h1><p class="sub">El juego de Halloween. Cada uno vota desde su móvil.</p>
     <input id="nm" placeholder="Tu nombre" maxlength="14" value="${esc(myName)}" autocomplete="off">
-    ${busy?'<p class="mute">Conectando…</p>':hc.length===4
+    ${busy?`<p class="mute">Conectando… ${esc(stage)}</p>`:hc.length===4
       ?`<button class="pri" data-a="join" data-c="${esc(hc)}">Unirme a la partida ${esc(hc)}</button>`
       :`<button class="pri" data-a="create" data-m="colegueo">😄 Crear partida · Colegueo</button><button class="pri" data-a="create" data-m="fuerte">🌶️ Crear partida · Fuerte (+18)</button><div class="or">o entra con un código</div><div class="row"><input id="cd" maxlength="4" placeholder="CÓDIGO" autocomplete="off"><button data-a="join">Unirme</button></div>`}
     <p class="err">${esc(err)}</p>`;
