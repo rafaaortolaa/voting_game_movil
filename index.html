@@ -24,6 +24,8 @@ button:disabled{opacity:.4}
 .err{color:#ff8f8f;min-height:1.4em}
 .top{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-weight:600;margin-bottom:10px}
 .chip{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:4px 12px;color:var(--bone)}
+.chip.prev{background:var(--card);border:2px solid var(--line);opacity:.75;color:var(--mute)}
+.chip.prev b{color:var(--mute)}
 .q{font:400 27px/1.15 Bungee,Impact,sans-serif;margin:12px 0 18px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .opt{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--line);text-align:left;padding:10px 12px;margin:0}
@@ -112,7 +114,7 @@ const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:
 const pid=ls.get('pid')||(()=>{const p=Math.random().toString(36).slice(2,10);ls.set('pid',p);return p})();
 const OPTS={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443'],username:'openrelayproject',credential:'openrelayproject'}]}};
 let wl;async function keepAwake(){try{if(navigator.wakeLock&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
-let mineV=[],step=0,stepKey='',lastSig='';
+let mineV=[],mineInitV=[],mineTbV=[],step=0,stepKey='',lastSig='';
 let myName=ls.get('name')||'',isHost=false,code='',peer,conn,conns={},H=null,S=null,me=null,myVote=null,err='',cq='',deck=[],busy=false;
 const hashCode=()=>(location.hash||'').replace('#','').toUpperCase().slice(0,4);
 
@@ -125,7 +127,7 @@ function createGame(){
   isHost=true;busy=true;err='';render();keepAwake();
   const c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
   peer=new Peer('hq-'+c,OPTS);
-  peer.on('open',()=>{code=c;busy=false;H={cfg:{mode:'colegueo',target:10,secs:60},phase:'lobby',round:0,q:'',votes:{},res:null,tiebreak:null,deadline:0,champ:null,players:[{id:pid,n:1,name:myName,total:0,wins:0}]};me=1;bc();setInterval(()=>{if(H&&H.phase==='vote'&&H.deadline&&Date.now()>=H.deadline)reveal()},500)});
+  peer.on('open',()=>{code=c;busy=false;H={cfg:{mode:'colegueo',target:10,secs:60},phase:'lobby',round:0,q:'',votes:{},res:null,initialRes:null,tbRes:null,tiebreak:null,deadline:0,champ:null,players:[{id:pid,n:1,name:myName,total:0,wins:0}]};me=1;bc();setInterval(()=>{if(H&&H.phase==='vote'&&H.deadline&&Date.now()>=H.deadline)reveal()},500)});
   peer.on('disconnected',()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame()}else if(!H){busy=false;isHost=false;err='No se pudo crear la partida ['+e.type+']. Revisa tu conexión.';render()}});
   peer.on('connection',c=>{
@@ -138,8 +140,8 @@ function createGame(){
     });
   });
 }
-const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,code,champ:H.champ,tiebreak:H.tiebreak||null,tiebreakLeft:H.tiebreakAt?Math.max(0,H.tiebreakAt-Date.now()):0,tbWaiting:!!(H.tiebreakAt&&Date.now()<H.tiebreakAt),timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
-function bc(){S=pub();S.endAt=H.deadline;S.tiebreakEnd=H.tiebreakAt||0;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]!=null?H.votes[id]:null,mine:(H.res&&p&&H.res.voters[p.n])||[]})}}mineV=(H.res&&H.res.voters[me])||[];myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
+const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,initialRes:H.initialRes?{counts:H.initialRes.counts,max:H.initialRes.max,winners:H.initialRes.winners}:null,tbRes:H.tbRes?{counts:H.tbRes.counts,max:H.tbRes.max,winners:H.tbRes.winners}:null,code,champ:H.champ,tiebreak:H.tiebreak||null,tiebreakLeft:H.tiebreakAt?Math.max(0,H.tiebreakAt-Date.now()):0,tbWaiting:!!(H.tiebreakAt&&Date.now()<H.tiebreakAt),timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
+function bc(){S=pub();S.endAt=H.deadline;S.tiebreakEnd=H.tiebreakAt||0;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);const pn=p&&p.n;c.send({t:'s',s:S,you:pn,voted:H.votes[id]!=null?H.votes[id]:null,mine:(H.res&&pn&&H.res.voters[pn])||[],mineInit:(H.initialRes&&pn&&H.initialRes.voters[pn])||[],mineTb:(H.tbRes&&pn&&H.tbRes.voters[pn])||[]})}}mineV=(H.res&&me&&H.res.voters[me])||[];mineInitV=(H.initialRes&&me&&H.initialRes.voters[me])||[];mineTbV=(H.tbRes&&me&&H.tbRes.voters[me])||[];myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
 let bt=0;function bcSoon(){if(bt)return;bt=setTimeout(()=>{bt=0;bc()},150)}
 function castVote(id,n){
   const v=H.players.find(p=>p.id===id);
@@ -157,7 +159,7 @@ function nextQ(){
   const m=H.cfg.mode;
   if(!decks[m].length)decks[m]=Q[m].map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
   H.q=cq.trim()||decks[m].pop();cq='';
-  H.round++;H.votes={};H.res=null;H.tiebreak=null;H.tiebreakAt=0;H.phase='vote';
+  H.round++;H.votes={};H.res=null;H.initialRes=null;H.tbRes=null;H.tiebreak=null;H.tiebreakAt=0;H.phase='vote';
   H.deadline=H.cfg.secs?Date.now()+H.cfg.secs*1000:0;bc();botVotes();
 }
 function botVotes(){
@@ -180,10 +182,11 @@ function reveal(){
   for(const id in H.votes){const t=H.votes[id],v=H.players.find(p=>p.id===id);counts[t]=(counts[t]||0)+1;(voters[t]=voters[t]||[]).push(v?v.n:0)}
   const max=Math.max(0,...Object.values(counts));
   const winners=max?H.players.filter(p=>counts[p.n]===max).map(p=>p.n):[];
-  if(winners.length>1){
+  if(!H.tiebreak&&winners.length>1){
     const eligible=H.players.filter(p=>!winners.includes(p.n));
     if(eligible.length>0){
       H.players.forEach(p=>{p.total+=counts[p.n]||0});
+      H.initialRes={counts,voters,max,winners};
       H.tiebreak=winners;H.votes={};H.tiebreakAt=Date.now()+5000;
       H.deadline=0;bc();
       setTimeout(()=>{
@@ -195,6 +198,9 @@ function reveal(){
       return;
     }
   }
+  if(H.tiebreak){
+    H.tbRes={counts,voters,max,winners:winners.length===1?winners:[]};
+  }
   H.tiebreak=null;
   H.players.forEach(p=>{p.total+=counts[p.n]||0;if(winners.length===1&&winners.includes(p.n))p.wins++});
   H.res={counts,voters,max,winners:winners.length===1?winners:[]};H.deadline=0;
@@ -202,7 +208,7 @@ function reveal(){
   H.champ=ch.length?ch.filter(p=>p.wins===top).map(p=>p.n):null;
   H.phase='result';bc();
 }
-function resetGame(){H.players.forEach(p=>{p.total=0;p.wins=0});H.round=0;H.champ=null;H.res=null;H.tiebreak=null;H.tiebreakAt=0;H.votes={};H.phase='lobby';bc()}
+function resetGame(){H.players.forEach(p=>{p.total=0;p.wins=0});H.round=0;H.champ=null;H.res=null;H.initialRes=null;H.tbRes=null;H.tiebreak=null;H.tiebreakAt=0;H.votes={};H.phase='lobby';bc()}
 
 // ---------- Jugador ----------
 let stage='';
@@ -227,7 +233,7 @@ function joinGame(c,retry){
     opened=true;setStage('2/3 buscando partida');
     conn=peer.connect('hq-'+code,{reliable:true});
     conn.on('open',()=>{setStage('3/3 entrando');conn.send({t:'join',pid,name:myName})});
-    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;if(S.tiebreakLeft)S.tiebreakEnd=Date.now()+S.tiebreakLeft;me=m.you;myVote=m.voted;mineV=m.mine||[];render()}});
+    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;if(S.tiebreakLeft)S.tiebreakEnd=Date.now()+S.tiebreakLeft;me=m.you;myVote=m.voted;mineV=m.mine||[];mineInitV=m.mineInit||[];mineTbV=m.mineTb||[];render()}});
     conn.on('close',()=>{if(S&&!done)return;if(S)setTimeout(()=>joinGame(code),1500)});
   });
   peer.on('error',e=>{
@@ -273,7 +279,7 @@ function render(){
   }
   const k0=S.phase+S.round;if(k0!==stepKey){stepKey=k0;step=0}
   const tbWaiting=!!(S.tiebreak&&S.tiebreakEnd&&Date.now()<S.tiebreakEnd);
-  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.champ,S.tiebreak,tbWaiting,S.timed,S.players,myVote,me,step,mineV]);
+  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.initialRes,S.tbRes,S.champ,S.tiebreak,tbWaiting,S.timed,S.players,myVote,me,step,mineV,mineInitV,mineTbV]);
   if(sig===lastSig){const vc=$('#vc');if(vc){const el=S.tiebreak?S.players.length-S.tiebreak.length:S.players.length;vc.textContent=S.voted+' de '+el+' han votado'}return}
   lastSig=sig;
   const ps=S.players,total=ps.length,cf=S.cfg,nm=n=>esc((ps.find(p=>p.n===n)||{}).name||'?');
@@ -307,16 +313,41 @@ function render(){
       if(isHost)h+=`<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button data-a="skip">Saltar pregunta (no cuenta)</button>`;
     }
   }else if(S.phase==='result'){
-    const r=S.res,ct=n=>r.counts[n]||0,sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
+    const hasTb=!!S.initialRes;
+    const baseRes=hasTb?S.initialRes:S.res;
+    const r=S.res,ct=n=>baseRes.counts[n]||0,sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
     h+=`<div class="dots">${[0,1].map(i=>`<i class="${i===step?'on':''}"></i>`).join('')}</div>`;
     if(step===0){
       h+=`<div class="mute">${esc(S.q)}</div>`;
-      h+=mineV.length
-        ?`<div class="mine">Te han votado <b>${mineV.length}</b> ${mineV.length>1?'personas':'persona'}</div><div class="players">${mineV.map(n=>`<span class="chip"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`
-        :`<div class="mine">Nadie te ha votado esta ronda 😅</div>`;
+      if(hasTb){
+        const anyVote=mineInitV.length>0||mineTbV.length>0;
+        if(anyVote){
+          h+=`<div class="mine">`;
+          if(mineTbV.length){
+            h+=`<div>⚔️ Te han votado en el desempate (<b>${mineTbV.length}</b>):</div><div class="players">${mineTbV.map(n=>`<span class="chip"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`;
+          }
+          if(mineInitV.length){
+            h+=`<div style="color:var(--mute);font-size:15px;margin-top:${mineTbV.length?'10px':'0'}">🗳️ Votos de la primera votación (en gris):</div><div class="players">${mineInitV.map(n=>`<span class="chip prev"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`;
+          }
+          h+=`</div>`;
+        }else{
+          h+=`<div class="mine">Nadie te ha votado esta ronda 😅</div>`;
+        }
+      }else{
+        h+=mineV.length
+          ?`<div class="mine">Te han votado <b>${mineV.length}</b> ${mineV.length>1?'personas':'persona'}</div><div class="players">${mineV.map(n=>`<span class="chip"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`
+          :`<div class="mine">Nadie te ha votado esta ronda 😅</div>`;
+      }
       h+=`<h2>Resumen de la ronda</h2>`;
-      h+=r.max?(r.winners.length?`<div class="win sm"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>Gana la ronda con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win sm"><div class="big">Empate total</div>Nadie gana esta ronda</div>`):`<div class="win sm"><div class="big">Nadie votó</div></div>`;
-      h+=sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?ct(p.n)/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${ct(p.n)}</span></div>`).join('');
+      if(hasTb){
+        h+=r.winners.length
+          ?`<div class="win sm"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>Gana la ronda tras el desempate con ${r.max} ${r.max>1?'votos':'voto'}</div>`
+          :`<div class="win sm"><div class="big">Empate en el desempate</div>Nadie gana esta ronda</div>`;
+        h+=`<p class="mute" style="margin:4px 0 8px;font-size:14px">Votación general:</p>`;
+      }else{
+        h+=r.max?(r.winners.length?`<div class="win sm"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>Gana la ronda con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win sm"><div class="big">Empate total</div>Nadie gana esta ronda</div>`):`<div class="win sm"><div class="big">Nadie votó</div></div>`;
+      }
+      h+=sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${baseRes.max?ct(p.n)/baseRes.max*100:0}%"></div><span>${esc(p.name)}${hasTb&&S.initialRes.winners.includes(p.n)?' ⚔️':''}</span></div><span class="v">${ct(p.n)}</span></div>`).join('');
     }else{
       const top=Math.max(0,...ps.map(p=>p.wins)),ls=ps.filter(p=>top>0&&p.wins===top);
       h+=`<h2>Resumen de la partida</h2>`;
