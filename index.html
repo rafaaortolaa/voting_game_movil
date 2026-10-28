@@ -92,11 +92,13 @@ h2{font:400 21px/1.2 Bungee,Impact,sans-serif;margin:22px 0 8px}h2 small{display
 .nav{margin-top:16px}.nav button{margin:0}
 #tm{min-height:1.5em}
 #app{overflow-anchor:none}
+.ver{position:fixed;right:8px;bottom:4px;font:600 11px Nunito,sans-serif;color:var(--line);z-index:2;pointer-events:none}
 </style>
 </head>
 <body>
 <div id="bg"></div>
 <div id="app"></div>
+<div class="ver">v6</div>
 <script src="preguntas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -222,10 +224,10 @@ function enter(k){app.classList.toggle('enter',k!==lastKey);lastKey=k}
 function burst(list){if(RM)return;for(let i=0;i<26;i++){const e=document.createElement('span');e.className='fx';e.textContent=list[i%list.length];e.style.left=Math.random()*96+'vw';e.style.animationDelay=Math.random()*.9+'s';e.style.fontSize=(22+Math.random()*18)+'px';document.body.appendChild(e);setTimeout(()=>e.remove(),4200)}}
 (function(){const bg=$('#bg'),em=['🎃','👻','🦇','💀','🕸️','🕯️'];for(let i=0;i<14;i++){const e=document.createElement('i');e.textContent=em[i%em.length];e.style.left=(i*7.3+Math.random()*5)%96+'vw';e.style.fontSize=(24+Math.random()*26)+'px';e.style.animationDuration=(14+Math.random()*14)+'s';e.style.animationDelay=(-Math.random()*20)+'s';bg.appendChild(e)}})();
 const MODE=m=>m==='fuerte'?'🌶️ Fuerte':'😄 Colegueo';
-function cfgPanel(){
+function cfgPanel(modeOnly){
   const c=S.cfg,seg=m=>`<button class="${c.mode===m?'on':''}" data-a="mode" data-m="${m}">${MODE(m)}</button>`;
   const stp=(l,k,v)=>`<div class="stp"><span>${l}</span><button data-a="${k}" data-d="-1">−</button><b>${v}</b><button data-a="${k}" data-d="1">+</button></div>`;
-  return `<div class="cfg"><div class="seg">${seg('colegueo')}${seg('fuerte')}</div>${stp('Rondas para ganar','tg',c.target)}${stp('Tiempo por pregunta','sc',c.secs?c.secs+' s':'sin límite')}</div>`;
+  return `<div class="cfg"><div class="seg">${seg('colegueo')}${seg('fuerte')}</div>${modeOnly?'':stp('Rondas para ganar','tg',c.target)+stp('Tiempo por pregunta','sc',c.secs?c.secs+' s':'sin límite')}</div>`;
 }
 function render(){
   if(!S){
@@ -283,7 +285,7 @@ function render(){
     if(step===2){
       if(isHost){
         if(S.champ)h+=`<button class="pri" data-a="end">Terminar partida</button>`;
-        else h+=cfgPanel()+`<input id="cq" placeholder="Tu propia pregunta (opcional)" value="${esc(cq)}"><button class="pri" data-a="next">Siguiente pregunta para todos</button><button data-a="end">Terminar partida</button>`;
+        else h+=cfgPanel(true)+`<input id="cq" placeholder="Tu propia pregunta (opcional)" value="${esc(cq)}"><button class="pri" data-a="next">Siguiente pregunta para todos</button><button data-a="end">Terminar partida</button>`;
       }else h+=`<p class="mute" style="text-align:center">${S.champ?'Fin de la partida…':'Esperando al anfitrión…'}</p>`;
     }
   }else{
