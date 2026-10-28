@@ -93,12 +93,13 @@ h2{font:400 21px/1.2 Bungee,Impact,sans-serif;margin:22px 0 8px}h2 small{display
 #tm{min-height:1.5em}
 #app{overflow-anchor:none}
 .ver{position:fixed;right:8px;bottom:4px;font:600 11px Nunito,sans-serif;color:var(--line);z-index:2;pointer-events:none}
+.win.sm{padding:10px;margin:8px 0 12px}.win.sm .big{font-size:24px}
 </style>
 </head>
 <body>
 <div id="bg"></div>
 <div id="app"></div>
-<div class="ver">v6</div>
+<div class="ver">v7</div>
 <script src="preguntas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -267,22 +268,24 @@ function render(){
     if(isHost)h+=`<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button data-a="skip">Saltar pregunta (no cuenta)</button>`;
   }else if(S.phase==='result'){
     const r=S.res,ct=n=>r.counts[n]||0,sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
-    h+=`<div class="dots">${[0,1,2].map(i=>`<i class="${i===step?'on':''}"></i>`).join('')}</div>`;
-    if(step<2)h+=`<div class="mute">${esc(S.q)}</div>`;
+    h+=`<div class="dots">${[0,1].map(i=>`<i class="${i===step?'on':''}"></i>`).join('')}</div>`;
     if(step===0){
-      h+=`<h2>Quién te ha votado</h2>`+(mineV.length
+      h+=`<div class="mute">${esc(S.q)}</div>`;
+      h+=mineV.length
         ?`<div class="mine">Te han votado <b>${mineV.length}</b> ${mineV.length>1?'personas':'persona'}</div><div class="players">${mineV.map(n=>`<span class="chip"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`
-        :`<div class="mine">Nadie te ha votado esta ronda 😅</div>`);
-    }else if(step===1){
-      h+=r.max?`<div class="win"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>${r.winners.length>1?'Empate':'Gana la ronda'} con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win"><div class="big">Nadie votó</div></div>`;
-      h+=`<h2>Resumen de la ronda</h2>`+sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?ct(p.n)/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${ct(p.n)}</span></div>`).join('');
+        :`<div class="mine">Nadie te ha votado esta ronda 😅</div>`;
+      h+=`<h2>Resumen de la ronda</h2>`;
+      h+=r.max?`<div class="win sm"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>${r.winners.length>1?'Empate':'Gana la ronda'} con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win sm"><div class="big">Nadie votó</div></div>`;
+      h+=sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?ct(p.n)/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${ct(p.n)}</span></div>`).join('');
     }else{
-      h+=`<h2>👑 Va ganando: ${esc(lead[0].name)} <small>${lead[0].total} votos en total</small></h2>`;
-      h+=lead.map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">${p.total} votos · 🏆 ${p.wins}/${cf.target}</span></div>`).join('');
+      const top=Math.max(0,...ps.map(p=>p.wins)),ls=ps.filter(p=>top>0&&p.wins===top);
+      h+=`<h2>Resumen de la partida</h2>`;
+      h+=top?`<div class="mine">👑 Va ganando <b>${ls.map(p=>esc(p.name)).join(' y ')}</b> con ${top} ${top>1?'rondas ganadas':'ronda ganada'}</div>`:`<div class="mine">Todavía nadie ha ganado una ronda</div>`;
+      h+=ps.filter(p=>p.wins>0).sort((a,b)=>b.wins-a.wins||b.total-a.total).map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">🏆 ${p.wins}/${cf.target}</span></div>`).join('');
       if(S.champ)h+=`<div class="win" style="margin-top:16px"><div class="big">🏆 ${S.champ.map(nm).join(' y ')}</div>${S.champ.length>1?'llegan':'llega'} a ${cf.target} rondas ganadas</div>`;
     }
-    h+=`<div class="row nav">${step>0?`<button data-a="step" data-d="-1">‹ Atrás</button>`:''}${step<2?`<button class="pri" data-a="step" data-d="1">Siguiente ›</button>`:''}</div>`;
-    if(step===2){
+    h+=`<div class="row nav">${step>0?`<button data-a="step" data-d="-1">‹ Atrás</button>`:''}${step<1?`<button class="pri" data-a="step" data-d="1">Siguiente ›</button>`:''}</div>`;
+    if(step===1){
       if(isHost){
         if(S.champ)h+=`<button class="pri" data-a="end">Terminar partida</button>`;
         else h+=cfgPanel(true)+`<input id="cq" placeholder="Tu propia pregunta (opcional)" value="${esc(cq)}"><button class="pri" data-a="next">Siguiente pregunta para todos</button><button data-a="end">Terminar partida</button>`;
@@ -291,14 +294,14 @@ function render(){
   }else{
     const win=(S.champ&&S.champ.length?S.champ:[ [...ps].sort((a,b)=>b.wins-a.wins||b.total-a.total)[0].n ]);
     h+=`<div class="win"><div class="big">🏆 ${win.map(nm).join(' y ')}</div>${win.length>1?'ganan':'gana'} la partida</div><h2>Clasificación final</h2>`;
-    h+=[...ps].sort((a,b)=>b.wins-a.wins||b.total-a.total).map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">🏆 ${p.wins} · ${p.total} votos</span></div>`).join('');
+    h+=[...ps].filter(p=>p.wins>0).sort((a,b)=>b.wins-a.wins||b.total-a.total).map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">🏆 ${p.wins}</span></div>`).join('');
     if(isHost)h+=`<button class="pri" data-a="again" style="margin-top:16px">Nueva partida (mismos jugadores)</button>`;
   }
   const k=S.phase+S.round+'-'+step,y=window.scrollY||0,changed=k!==lastKey;
   app.innerHTML=h;
   window.scrollTo(0,changed?0:y);
   enter(k);
-  const bk=S.phase==='result'?((step===1||(step===2&&S.champ))?k:''):(S.phase==='end'?k:'');
+  const bk=S.phase==='result'?((step===0||(step===1&&S.champ))?k:''):(S.phase==='end'?k:'');
   if(bk&&bk!==lastBurst){lastBurst=bk;burst(S.champ?['🏆','🎃','👻','🦇','💀']:['🎃','👻','🦇','💀'])}
   updTimer();
 }
@@ -322,7 +325,7 @@ app.addEventListener('click',e=>{
     return joinGame(c);
   }
   if(a==='vote')return vote(+b.dataset.n);
-  if(a==='step'){step=Math.max(0,Math.min(2,step+(+b.dataset.d)));return render()}
+  if(a==='step'){step=Math.max(0,Math.min(1,step+(+b.dataset.d)));return render()}
   if(!isHost||!H)return;
   const d=+b.dataset.d;
   if(a==='next')nextQ();
