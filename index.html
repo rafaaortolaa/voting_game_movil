@@ -99,7 +99,7 @@ h2{font:400 21px/1.2 Bungee,Impact,sans-serif;margin:22px 0 8px}h2 small{display
 <body>
 <div id="bg"></div>
 <div id="app"></div>
-<div class="ver">v7</div>
+<div class="ver">v8</div>
 <script src="preguntas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -118,13 +118,14 @@ const hashCode=()=>(location.hash||'').replace('#','').toUpperCase().slice(0,4);
 
 // ---------- Anfitrión ----------
 const TIMES=[0,10,15,20,30,45,60,90];
+const BOT_NAMES=['Lucía','Pablo','María','Carlos','Elena','Javi','Ana','Marcos','Sara','Hugo','Laura','Álex','Sofía','Dani','Carmen','Adrián','Paula','Diego','Marta','Raúl'];
 let decks={colegueo:[],fuerte:[]};
 function createGame(){
   if(typeof Peer==='undefined'){err='No se pudo cargar PeerJS (¿sin internet o bloqueado?).';return render()}
   isHost=true;busy=true;err='';render();keepAwake();
   const c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
   peer=new Peer('hq-'+c,OPTS);
-  peer.on('open',()=>{code=c;busy=false;H={cfg:{mode:'colegueo',target:10,secs:30},phase:'lobby',round:0,q:'',votes:{},res:null,tiebreak:null,deadline:0,champ:null,players:[{id:pid,n:1,name:myName,total:0,wins:0}]};me=1;bc();setInterval(()=>{if(H&&H.phase==='vote'&&H.deadline&&Date.now()>=H.deadline)reveal()},500)});
+  peer.on('open',()=>{code=c;busy=false;H={cfg:{mode:'colegueo',target:10,secs:60},phase:'lobby',round:0,q:'',votes:{},res:null,tiebreak:null,deadline:0,champ:null,players:[{id:pid,n:1,name:myName,total:0,wins:0}]};me=1;bc();setInterval(()=>{if(H&&H.phase==='vote'&&H.deadline&&Date.now()>=H.deadline)reveal()},500)});
   peer.on('disconnected',()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame()}else if(!H){busy=false;isHost=false;err='No se pudo crear la partida ['+e.type+']. Revisa tu conexión.';render()}});
   peer.on('connection',c=>{
@@ -137,13 +138,14 @@ function createGame(){
     });
   });
 }
-const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,code,champ:H.champ,tiebreak:H.tiebreak||null,timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
-function bc(){S=pub();S.endAt=H.deadline;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]!=null?H.votes[id]:null,mine:(H.res&&p&&H.res.voters[p.n])||[]})}}mineV=(H.res&&H.res.voters[me])||[];myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
+const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,code,champ:H.champ,tiebreak:H.tiebreak||null,tiebreakLeft:H.tiebreakAt?Math.max(0,H.tiebreakAt-Date.now()):0,tbWaiting:!!(H.tiebreakAt&&Date.now()<H.tiebreakAt),timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
+function bc(){S=pub();S.endAt=H.deadline;S.tiebreakEnd=H.tiebreakAt||0;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]!=null?H.votes[id]:null,mine:(H.res&&p&&H.res.voters[p.n])||[]})}}mineV=(H.res&&H.res.voters[me])||[];myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
 let bt=0;function bcSoon(){if(bt)return;bt=setTimeout(()=>{bt=0;bc()},150)}
 function castVote(id,n){
   const v=H.players.find(p=>p.id===id);
   if(H.phase!=='vote'||!v||v.n===n||!H.players.some(p=>p.n===n))return;
   if(H.tiebreak){
+    if(H.tiebreakAt&&Date.now()<H.tiebreakAt)return;
     if(H.tiebreak.includes(v.n))return;
     if(!H.tiebreak.includes(n))return;
   }
@@ -155,7 +157,7 @@ function nextQ(){
   const m=H.cfg.mode;
   if(!decks[m].length)decks[m]=Q[m].map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
   H.q=cq.trim()||decks[m].pop();cq='';
-  H.round++;H.votes={};H.res=null;H.tiebreak=null;H.phase='vote';
+  H.round++;H.votes={};H.res=null;H.tiebreak=null;H.tiebreakAt=0;H.phase='vote';
   H.deadline=H.cfg.secs?Date.now()+H.cfg.secs*1000:0;bc();botVotes();
 }
 function botVotes(){
@@ -168,7 +170,7 @@ function botVotes(){
 }
 function toggleBots(){
   if(H.players.some(p=>p.bot)){H.players=H.players.filter(p=>!p.bot);H.players.forEach((p,i)=>p.n=i+1)}
-  else while(H.players.length<15){const i=H.players.length+1;H.players.push({id:'bot'+i,n:i,name:'Bot'+i,total:0,wins:0,bot:true})}
+  else{const bn=[...BOT_NAMES].sort(()=>Math.random()-.5);let bi=0;while(H.players.length<15){const i=H.players.length+1;H.players.push({id:'bot'+i,n:i,name:bn[bi++%bn.length],total:0,wins:0,bot:true})}}
   bc();
 }
 function skipQ(){H.round--;nextQ()}
@@ -182,9 +184,15 @@ function reveal(){
     const eligible=H.players.filter(p=>!winners.includes(p.n));
     if(eligible.length>0){
       H.players.forEach(p=>{p.total+=counts[p.n]||0});
-      H.tiebreak=winners;H.votes={};
-      H.deadline=H.cfg.secs?Date.now()+H.cfg.secs*1000:0;
-      bc();botVotes();return;
+      H.tiebreak=winners;H.votes={};H.tiebreakAt=Date.now()+5000;
+      H.deadline=0;bc();
+      setTimeout(()=>{
+        if(!H||!H.tiebreak||H.phase!=='vote')return;
+        H.tiebreakAt=0;
+        H.deadline=H.cfg.secs?Date.now()+H.cfg.secs*1000:0;
+        bc();botVotes();
+      },5000);
+      return;
     }
   }
   H.tiebreak=null;
@@ -194,7 +202,7 @@ function reveal(){
   H.champ=ch.length?ch.filter(p=>p.wins===top).map(p=>p.n):null;
   H.phase='result';bc();
 }
-function resetGame(){H.players.forEach(p=>{p.total=0;p.wins=0});H.round=0;H.champ=null;H.res=null;H.tiebreak=null;H.votes={};H.phase='lobby';bc()}
+function resetGame(){H.players.forEach(p=>{p.total=0;p.wins=0});H.round=0;H.champ=null;H.res=null;H.tiebreak=null;H.tiebreakAt=0;H.votes={};H.phase='lobby';bc()}
 
 // ---------- Jugador ----------
 let stage='';
@@ -219,7 +227,7 @@ function joinGame(c,retry){
     opened=true;setStage('2/3 buscando partida');
     conn=peer.connect('hq-'+code,{reliable:true});
     conn.on('open',()=>{setStage('3/3 entrando');conn.send({t:'join',pid,name:myName})});
-    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;me=m.you;myVote=m.voted;mineV=m.mine||[];render()}});
+    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;if(S.tiebreakLeft)S.tiebreakEnd=Date.now()+S.tiebreakLeft;me=m.you;myVote=m.voted;mineV=m.mine||[];render()}});
     conn.on('close',()=>{if(S&&!done)return;if(S)setTimeout(()=>joinGame(code),1500)});
   });
   peer.on('error',e=>{
@@ -231,6 +239,7 @@ function joinGame(c,retry){
 function vote(n){
   if(n===me)return;
   if(S&&S.tiebreak){
+    if(S.tiebreakEnd&&Date.now()<S.tiebreakEnd)return;
     if(S.tiebreak.includes(me))return;
     if(!S.tiebreak.includes(n))return;
   }
@@ -263,7 +272,8 @@ function render(){
     return;
   }
   const k0=S.phase+S.round;if(k0!==stepKey){stepKey=k0;step=0}
-  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.champ,S.tiebreak,S.timed,S.players,myVote,me,step,mineV]);
+  const tbWaiting=!!(S.tiebreak&&S.tiebreakEnd&&Date.now()<S.tiebreakEnd);
+  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.champ,S.tiebreak,tbWaiting,S.timed,S.players,myVote,me,step,mineV]);
   if(sig===lastSig){const vc=$('#vc');if(vc){const el=S.tiebreak?S.players.length-S.tiebreak.length:S.players.length;vc.textContent=S.voted+' de '+el+' han votado'}return}
   lastSig=sig;
   const ps=S.players,total=ps.length,cf=S.cfg,nm=n=>esc((ps.find(p=>p.n===n)||{}).name||'?');
@@ -282,13 +292,20 @@ function render(){
     if(isHost)h+=cfgPanel()+`<button class="pri" data-a="next" ${total<2?'disabled':''}>Empezar (${total} jugadores)</button><button data-a="bots">${ps.length&&H.players.some(p=>p.bot)?'Quitar bots de prueba':'🤖 Rellenar con bots de prueba (hasta 15)'}</button>`;
   }else if(S.phase==='vote'){
     const tb=S.tiebreak,iAmTied=tb&&tb.includes(me);
-    if(tb)h+=`<div class="win sm"><div class="big">⚔️ Desempate</div>Solo se puede votar a los empatados</div>`;
-    h+=`<div class="q" style="font-size:${S.q.length>100?17:S.q.length>70?21:27}px">${esc(S.q)}</div>`;
-    if(S.timed)h+=`<div class="tbar"><i id="tb" style="width:${S.cfg.secs?Math.max(0,((S.endAt||0)-Date.now())/(S.cfg.secs*1000)*100):0}%"></i></div><div id="tm" class="mute">⏱ ${Math.ceil(Math.max(0,(S.endAt||0)-Date.now())/1000)} s</div>`;
-    const votables=tb?ps.filter(p=>tb.includes(p.n)):ps;
-    h+=`<div class="grid">${votables.map(p=>`<button class="opt ${myVote===p.n?'on':''}" data-a="vote" data-n="${p.n}" ${p.n===me||iAmTied?'disabled':''}><span class="n">${p.n}</span><span>${esc(p.name)}${p.n===me?' (tú)':''}</span></button>`).join('')}</div>
-    <p class="mute" style="text-align:center">${iAmTied?'Estás en el desempate. No puedes votar en esta ronda.':myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':tb?'Vota para deshacer el empate.':'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br><span id="vc">${S.voted} de ${tb?total-tb.length:total} han votado</span></p>`;
-    if(isHost)h+=`<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button data-a="skip">Saltar pregunta (no cuenta)</button>`;
+    if(tbWaiting){
+      h+=`<div class="win sm"><div class="big">⚔️ ¡Empate!</div>Han empatado: <b>${tb.map(n=>nm(n)).join(' y ')}</b></div>`;
+      h+=`<p class="sub" style="text-align:center">¡Se prepara el desempate!</p>`;
+      h+=`<div class="code" id="tbcd" style="font-size:52px;margin:16px 0">${Math.ceil(Math.max(0,(S.tiebreakEnd||0)-Date.now())/1000)}</div>`;
+      h+=`<p class="mute" style="text-align:center">La pregunta vuelve a salir en unos segundos…</p>`;
+    }else{
+      if(tb)h+=`<div class="win sm"><div class="big">⚔️ Desempate</div>Solo se puede votar a los empatados</div>`;
+      h+=`<div class="q" style="font-size:${S.q.length>100?17:S.q.length>70?21:27}px">${esc(S.q)}</div>`;
+      if(S.timed)h+=`<div class="tbar"><i id="tb" style="width:${S.cfg.secs?Math.max(0,((S.endAt||0)-Date.now())/(S.cfg.secs*1000)*100):0}%"></i></div><div id="tm" class="mute">⏱ ${Math.ceil(Math.max(0,(S.endAt||0)-Date.now())/1000)} s</div>`;
+      const votables=tb?ps.filter(p=>tb.includes(p.n)):ps;
+      h+=`<div class="grid">${votables.map(p=>`<button class="opt ${myVote===p.n?'on':''}" data-a="vote" data-n="${p.n}" ${p.n===me||iAmTied?'disabled':''}><span class="n">${p.n}</span><span>${esc(p.name)}${p.n===me?' (tú)':''}</span></button>`).join('')}</div>
+      <p class="mute" style="text-align:center">${iAmTied?'Estás en el desempate. No puedes votar en esta ronda.':myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':tb?'Vota para deshacer el empate.':'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br><span id="vc">${S.voted} de ${tb?total-tb.length:total} han votado</span></p>`;
+      if(isHost)h+=`<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button data-a="skip">Saltar pregunta (no cuenta)</button>`;
+    }
   }else if(S.phase==='result'){
     const r=S.res,ct=n=>r.counts[n]||0,sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
     h+=`<div class="dots">${[0,1].map(i=>`<i class="${i===step?'on':''}"></i>`).join('')}</div>`;
@@ -330,7 +347,17 @@ function render(){
 }
 let lastBurst='';
 function updTimer(){
-  if(!S||S.phase!=='vote'||!S.timed)return;
+  if(!S)return;
+  const tbcd=$('#tbcd');
+  if(tbcd&&S.tiebreakEnd){
+    const rem=Math.max(0,S.tiebreakEnd-Date.now());
+    tbcd.textContent=Math.ceil(rem/1000);
+    if(rem<=0){
+      S.tiebreakEnd=0;
+      render();
+    }
+  }
+  if(S.phase!=='vote'||!S.timed)return;
   const tm=$('#tm'),tb=$('#tb');if(!tm||!tb)return;
   const l=Math.max(0,(S.endAt||0)-Date.now());
   tm.textContent='⏱ '+Math.ceil(l/1000)+' s';tb.style.width=(S.cfg.secs?l/(S.cfg.secs*1000)*100:0)+'%';
