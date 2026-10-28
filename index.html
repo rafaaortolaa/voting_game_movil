@@ -45,7 +45,7 @@ button:disabled{opacity:.4}
 .rank{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 @media (prefers-reduced-motion:no-preference){.win{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.9);opacity:0}}}
 
-#bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#bg{position:fixed;top:0;left:0;right:0;bottom:0;overflow:hidden;pointer-events:none;z-index:0}
 #bg i{position:absolute;bottom:-60px;font-style:normal;opacity:.18;animation:rise linear infinite}
 #app{position:relative;z-index:1}
 .fx{position:fixed;top:-40px;z-index:5;pointer-events:none;font-size:28px;animation:fall 2.6s ease-in forwards}
@@ -75,6 +75,8 @@ button.pri:not(:disabled){animation:glow 2.2s ease-in-out infinite}
 .err:not(:empty){animation:shake .3s}
 }
 @media (prefers-reduced-motion:reduce){#bg,.fx{display:none}}
+body[data-mode=fuerte]{--pump:#ff3d5a;--line:#4a2040}
+button.pri{margin:8px 0}
 </style>
 </head>
 <body>
@@ -83,52 +85,94 @@ button.pri:not(:disabled){animation:glow 2.2s ease-in-out infinite}
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script>
-// ---------- Preguntas (cámbialas o añade las que quieras) ----------
-const Q=[
-"¿Quién es más probable que se líe con alguien esta noche?",
-"¿Quién es más probable que acabe llorando en el baño?",
-"¿Quién es más probable que sobreviva a un apocalipsis zombi?",
-"¿Quién sería el primero en morir en una película de terror?",
+// ---------- Preguntas ----------
+// Para añadir una: nueva línea entre comillas dobles "..." y una coma al final (menos la última de cada lista).
+// Evita poner comillas dobles " dentro de la pregunta.
+const Q={
+colegueo:[
 "¿Quién es más probable que se quede dormido en la fiesta?",
-"¿Quién es más probable que le escriba a su ex esta noche?",
-"¿Quién es más probable que se líe con alguien disfrazado de lo que sea?",
-"¿Quién es más probable que sea el último en irse de la fiesta?",
-"¿Quién es más probable que baile encima de una mesa?",
 "¿Quién es más probable que se pierda yendo al baño?",
-"¿Quién es más probable que sea un vampiro de verdad?",
-"¿Quién es más probable que grite al ver un bicho?",
-"¿Quién es más probable que acabe en urgencias por una tontería?",
-"¿Quién es más probable que tenga un fantasma en casa y lo ignore?",
-"¿Quién es más probable que se enamore de alguien esta noche?",
-"¿Quién es más probable que se gaste el sueldo en un viaje improvisado?",
-"¿Quién es más probable que hable solo en voz alta?",
-"¿Quién es más probable que haga un directo en TikTok esta noche?",
+"¿Quién sobreviviría más tiempo a un apocalipsis zombi?",
+"¿Quién sería el primero en morir en una película de terror?",
 "¿Quién es más probable que llegue tarde a su propia boda?",
-"¿Quién es más probable que invente una excusa para irse antes?",
+"¿Quién es más probable que baile encima de una mesa?",
+"¿Quién es más probable que grite al ver una araña?",
+"¿Quién es más probable que sea el último en irse de la fiesta?",
 "¿Quién es más probable que se haga famoso?",
 "¿Quién es más probable que cante en el karaoke sin que se lo pidan?",
 "¿Quién es más probable que pida pizza a las 4 de la mañana?",
 "¿Quién es más probable que tenga el móvil con la pantalla rota?",
+"¿Quién es más probable que hable solo en voz alta?",
+"¿Quién es más probable que acabe en urgencias por una tontería?",
+"¿Quién es más probable que se gaste el sueldo en un viaje improvisado?",
+"¿Quién es más probable que invente una excusa para irse antes?",
+"¿Quién es más probable que haga un directo en TikTok esta noche?",
 "¿Quién es más probable que se disfrace en pleno agosto?",
+"¿Quién es más probable que sea un vampiro de verdad?",
 "¿Quién es más probable que le dé miedo su propia sombra?",
+"¿Quién es más probable que se olvide del cumpleaños de su mejor amigo?",
 "¿Quién es más probable que acabe cantando en un coche con desconocidos?",
-"¿Quién es más probable que se líe con el amigo de un amigo?"
-];
+"¿Quién es más probable que compre algo inútil en una teletienda?",
+"¿Quién es más probable que se quede encerrado en su propia casa?",
+"¿Quién es más probable que gane un concurso de comer?",
+"¿Quién es más probable que ponga la música más vergonzosa?",
+"¿Quién es más probable que se haga amigo del camarero?",
+"¿Quién es más probable que llore viendo un anuncio?",
+"¿Quién es más probable que tenga 300 pestañas abiertas en el móvil?",
+"¿Quién es más probable que se enfade jugando a un juego de mesa?"
+],
+fuerte:[
+"¿Quién es más probable que se líe con alguien esta noche?",
+"¿Quién es más probable que le escriba a su ex borracho?",
+"¿Quién es más probable que se líe con el amigo de un amigo?",
+"¿Quién es más probable que tenga un rollo de una noche del que se arrepiente?",
+"¿Quién es más probable que sea infiel?",
+"¿Quién es más probable que acabe llorando en el baño?",
+"¿Quién es más probable que se líe con alguien de esta fiesta antes de que acabe?",
+"¿Quién es más probable que tenga la app de citas más activa?",
+"¿Quién es más probable que mande una foto de la que luego se arrepienta?",
+"¿Quién es más probable que tenga un secreto que nadie sospecha?",
+"¿Quién es más probable que bese a alguien por una apuesta?",
+"¿Quién es más probable que se líe con un compañero de trabajo?",
+"¿Quién es más probable que se líe con un ex de un amigo?",
+"¿Quién es más probable que acabe la noche en la cama de otra persona?",
+"¿Quién es más probable que sea el más ligón de la fiesta?",
+"¿Quién es más probable que tenga más ex de los que admite?",
+"¿Quién es más probable que haga un baile sensual sin que se lo pidan?",
+"¿Quién es más probable que se despierte sin saber dónde está?",
+"¿Quién es más probable que beba de más y no recuerde nada?",
+"¿Quién es más probable que le robe la pareja a un amigo?",
+"¿Quién es más probable que tenga un crush con alguien de aquí?",
+"¿Quién es más probable que mienta en una cita sobre su edad o su trabajo?",
+"¿Quién es más probable que se haya enamorado de alguien prohibido?",
+"¿Quién es más probable que vaya a un club de striptease?",
+"¿Quién es más probable que tenga el historial de búsqueda más turbio?",
+"¿Quién es más probable que se líe con alguien y no recuerde su nombre?",
+"¿Quién es más probable que haga un trío?",
+"¿Quién es más probable que bese a dos personas la misma noche?",
+"¿Quién es más probable que acabe borracho pidiendo perdón a todos?",
+"¿Quién es más probable que cotillee los mensajes de su pareja?"
+]
+};
 // ---------- Utilidades ----------
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const pid=ls.get('pid')||(()=>{const p=Math.random().toString(36).slice(2,10);ls.set('pid',p);return p})();
+const OPTS={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443'],username:'openrelayproject',credential:'openrelayproject'}]}};
+let wl;async function keepAwake(){try{if(navigator.wakeLock&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
 let myName=ls.get('name')||'',isHost=false,code='',peer,conn,conns={},H=null,S=null,me=null,myVote=null,err='',cq='',deck=[],busy=false;
 const hashCode=()=>(location.hash||'').replace('#','').toUpperCase().slice(0,4);
 
 // ---------- Anfitrión ----------
-function createGame(){
-  isHost=true;busy=true;err='';render();
+function createGame(mode){
+  if(typeof Peer==='undefined'){err='No se pudo cargar PeerJS (¿sin internet o bloqueado?).';return render()}
+  isHost=true;busy=true;err='';render();keepAwake();
   const c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
-  peer=new Peer('hq-'+c);
-  peer.on('open',()=>{code=c;busy=false;H={phase:'lobby',round:0,q:'',votes:{},res:null,players:[{id:pid,n:1,name:myName,total:0}]};me=1;bc()});
-  peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame()}else{busy=false;isHost=false;err='No se pudo crear la partida. Revisa tu conexión.';render()}});
+  peer=new Peer('hq-'+c,OPTS);
+  peer.on('open',()=>{code=c;busy=false;H={mode:mode,phase:'lobby',round:0,q:'',votes:{},res:null,players:[{id:pid,n:1,name:myName,total:0}]};me=1;bc()});
+  peer.on('disconnected',()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
+  peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame(mode)}else if(!H){busy=false;isHost=false;err='No se pudo crear la partida ['+e.type+']. Revisa tu conexión.';render()}});
   peer.on('connection',c=>{
     c.on('data',m=>{
       if(m.t==='join'&&m.pid){
@@ -139,10 +183,10 @@ function createGame(){
     });
   });
 }
-const pub=()=>({phase:H.phase,round:H.round,q:H.q,res:H.res,code,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total}))});
-function bc(){S=pub();for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]??null})}}myVote=H.votes[pid]??null;render()}
+const pub=()=>({mode:H.mode,phase:H.phase,round:H.round,q:H.q,res:H.res,code,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total}))});
+function bc(){S=pub();for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:(H.votes[id]!=null?H.votes[id]:null)})}}myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
 function nextQ(){
-  if(!deck.length)deck=Q.map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+  if(!deck.length)deck=Q[H.mode].map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
   H.q=cq.trim()||deck.pop();cq='';H.round++;H.votes={};H.res=null;H.phase='vote';bc();
 }
 function reveal(){
@@ -155,17 +199,18 @@ function reveal(){
 
 // ---------- Jugador ----------
 function joinGame(c){
-  code=c;busy=true;err='';render();
+  if(typeof Peer==='undefined'){err='No se pudo cargar PeerJS (¿sin internet o bloqueado?).';return render()}
+  code=c;busy=true;err='';render();keepAwake();
   try{peer&&peer.destroy()}catch(e){}
-  peer=new Peer();
+  peer=new Peer(OPTS);
   peer.on('open',()=>{
     conn=peer.connect('hq-'+code,{reliable:true});
-    const to=setTimeout(()=>{if(!S){err='No encuentro la partida '+code+'. ¿Está bien el código?';busy=false;render()}},9000);
+    const to=setTimeout(()=>{if(!S){const st=conn&&conn.peerConnection?conn.peerConnection.iceConnectionState:'sin-conexion';err='No consigo conectar con la partida '+code+' ['+st+']. Prueba otra red o recarga.';busy=false;render()}},9000);
     conn.on('open',()=>conn.send({t:'join',pid,name:myName}));
     conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);busy=false;S=m.s;me=m.you;myVote=m.voted;render()}});
     conn.on('close',()=>{if(S){setTimeout(()=>joinGame(code),1500)}});
   });
-  peer.on('error',()=>{if(!S){err='No encuentro la partida '+code+'.';busy=false;render()}});
+  peer.on('error',e=>{if(!S){err=e.type==='peer-unavailable'?'No existe la partida '+code+'. Revisa el código.':'Problema de conexión ['+e.type+'].';busy=false;render()}});
 }
 function vote(n){
   if(n===me)return;
@@ -186,14 +231,15 @@ function render(){
     <input id="nm" placeholder="Tu nombre" maxlength="14" value="${esc(myName)}" autocomplete="off">
     ${busy?'<p class="mute">Conectando…</p>':hc.length===4
       ?`<button class="pri" data-a="join" data-c="${esc(hc)}">Unirme a la partida ${esc(hc)}</button>`
-      :`<button class="pri" data-a="create">Crear partida</button><div class="or">o entra con un código</div><div class="row"><input id="cd" maxlength="4" placeholder="CÓDIGO" autocomplete="off"><button data-a="join">Unirme</button></div>`}
+      :`<button class="pri" data-a="create" data-m="colegueo">😄 Crear partida · Colegueo</button><button class="pri" data-a="create" data-m="fuerte">🌶️ Crear partida · Fuerte (+18)</button><div class="or">o entra con un código</div><div class="row"><input id="cd" maxlength="4" placeholder="CÓDIGO" autocomplete="off"><button data-a="join">Unirme</button></div>`}
     <p class="err">${esc(err)}</p>`;
-    enter('home'+busy+err);
+    document.body.dataset.mode='';enter('home'+busy+err);
     return;
   }
   const ps=S.players,total=ps.length,you=ps.find(p=>p.n===me);
   const chips=ps.map(p=>`<span class="chip"><b>${p.n}</b>${esc(p.name)}${p.n===me?' (tú)':''}</span>`).join('');
-  let h=`<div class="top"><span>${S.round?'Ronda '+S.round:'Sala de espera'}</span><span class="chip">${S.code}</span></div>`;
+  let h=`<div class="top"><span>${S.round?'Ronda '+S.round:'Sala de espera'}</span><span class="chip">${S.mode==='fuerte'?'🌶️ Fuerte':'😄 Colegueo'} · ${S.code}</span></div>`;
+  document.body.dataset.mode=S.mode||'';
   if(S.phase==='lobby'){
     const url=location.href.split('#')[0]+'#'+S.code;
     h+=`<h1>Tu número es el <b>${me||'…'}</b></h1>`;
@@ -233,7 +279,7 @@ app.addEventListener('click',e=>{
   if(nm){myName=nm.value.trim().slice(0,14);ls.set('name',myName)}
   if(a==='create'||a==='join'){
     if(!myName){err='Escribe tu nombre primero.';return render()}
-    if(a==='create')return createGame();
+    if(a==='create')return createGame(b.dataset.m);
     const c=(b.dataset.c||($('#cd')||{}).value||'').trim().toUpperCase();
     if(c.length!==4){err='El código tiene 4 letras.';return render()}
     return joinGame(c);
@@ -244,6 +290,7 @@ app.addEventListener('click',e=>{
   else if(a==='reveal')reveal();
   else if(a==='rank'){H.phase='end';bc()}
 });
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;keepAwake();if(isHost){if(peer&&peer.disconnected&&!peer.destroyed)try{peer.reconnect()}catch(e){}}else if(S&&(!conn||!conn.open))joinGame(code)});
 app.addEventListener('input',e=>{if(e.target.id==='cq')cq=e.target.value});
 render();
 </script>
