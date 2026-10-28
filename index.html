@@ -124,7 +124,7 @@ function createGame(){
   isHost=true;busy=true;err='';render();keepAwake();
   const c=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random()*24|0]).join('');
   peer=new Peer('hq-'+c,OPTS);
-  peer.on('open',()=>{code=c;busy=false;H={cfg:{mode:'colegueo',target:10,secs:30},phase:'lobby',round:0,q:'',votes:{},res:null,deadline:0,champ:null,players:[{id:pid,n:1,name:myName,total:0,wins:0}]};me=1;bc();setInterval(()=>{if(H&&H.phase==='vote'&&H.deadline&&Date.now()>=H.deadline)reveal()},500)});
+  peer.on('open',()=>{code=c;busy=false;H={cfg:{mode:'colegueo',target:10,secs:30},phase:'lobby',round:0,q:'',votes:{},res:null,tiebreak:null,deadline:0,champ:null,players:[{id:pid,n:1,name:myName,total:0,wins:0}]};me=1;bc();setInterval(()=>{if(H&&H.phase==='vote'&&H.deadline&&Date.now()>=H.deadline)reveal()},500)});
   peer.on('disconnected',()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame()}else if(!H){busy=false;isHost=false;err='No se pudo crear la partida ['+e.type+']. Revisa tu conexión.';render()}});
   peer.on('connection',c=>{
@@ -137,27 +137,33 @@ function createGame(){
     });
   });
 }
-const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,code,champ:H.champ,timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
+const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,code,champ:H.champ,tiebreak:H.tiebreak||null,timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
 function bc(){S=pub();S.endAt=H.deadline;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]!=null?H.votes[id]:null,mine:(H.res&&p&&H.res.voters[p.n])||[]})}}mineV=(H.res&&H.res.voters[me])||[];myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
 let bt=0;function bcSoon(){if(bt)return;bt=setTimeout(()=>{bt=0;bc()},150)}
 function castVote(id,n){
   const v=H.players.find(p=>p.id===id);
   if(H.phase!=='vote'||!v||v.n===n||!H.players.some(p=>p.n===n))return;
+  if(H.tiebreak){
+    if(H.tiebreak.includes(v.n))return;
+    if(!H.tiebreak.includes(n))return;
+  }
   H.votes[id]=n;bcSoon();
-  if(H.players.length>1&&Object.keys(H.votes).length>=H.players.length)setTimeout(reveal,900);
+  const eligible=H.tiebreak?H.players.filter(p=>!H.tiebreak.includes(p.n)).length:H.players.length;
+  if(eligible>0&&Object.keys(H.votes).length>=eligible)setTimeout(reveal,900);
 }
 function nextQ(){
   const m=H.cfg.mode;
   if(!decks[m].length)decks[m]=Q[m].map(q=>[Math.random(),q]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
   H.q=cq.trim()||decks[m].pop();cq='';
-  H.round++;H.votes={};H.res=null;H.phase='vote';
+  H.round++;H.votes={};H.res=null;H.tiebreak=null;H.phase='vote';
   H.deadline=H.cfg.secs?Date.now()+H.cfg.secs*1000:0;bc();botVotes();
 }
 function botVotes(){
-  const r=H.round;
-  H.players.filter(p=>p.bot).forEach(b=>setTimeout(()=>{
+  const r=H.round,tb=H.tiebreak;
+  H.players.filter(p=>p.bot&&(!tb||!tb.includes(p.n))).forEach(b=>setTimeout(()=>{
     if(!H||H.phase!=='vote'||H.round!==r)return;
-    const o=H.players.filter(p=>p.id!==b.id);castVote(b.id,o[Math.random()*o.length|0].n)
+    const o=tb?H.players.filter(p=>tb.includes(p.n)):H.players.filter(p=>p.id!==b.id);
+    if(o.length)castVote(b.id,o[Math.random()*o.length|0].n)
   },1000+Math.random()*8000));
 }
 function toggleBots(){
@@ -172,13 +178,23 @@ function reveal(){
   for(const id in H.votes){const t=H.votes[id],v=H.players.find(p=>p.id===id);counts[t]=(counts[t]||0)+1;(voters[t]=voters[t]||[]).push(v?v.n:0)}
   const max=Math.max(0,...Object.values(counts));
   const winners=max?H.players.filter(p=>counts[p.n]===max).map(p=>p.n):[];
-  H.players.forEach(p=>{p.total+=counts[p.n]||0;if(winners.includes(p.n))p.wins++});
-  H.res={counts,voters,max,winners};H.deadline=0;
+  if(winners.length>1){
+    const eligible=H.players.filter(p=>!winners.includes(p.n));
+    if(eligible.length>0){
+      H.players.forEach(p=>{p.total+=counts[p.n]||0});
+      H.tiebreak=winners;H.votes={};
+      H.deadline=H.cfg.secs?Date.now()+H.cfg.secs*1000:0;
+      bc();botVotes();return;
+    }
+  }
+  H.tiebreak=null;
+  H.players.forEach(p=>{p.total+=counts[p.n]||0;if(winners.length===1&&winners.includes(p.n))p.wins++});
+  H.res={counts,voters,max,winners:winners.length===1?winners:[]};H.deadline=0;
   const ch=H.players.filter(p=>p.wins>=H.cfg.target),top=Math.max(0,...ch.map(p=>p.wins));
   H.champ=ch.length?ch.filter(p=>p.wins===top).map(p=>p.n):null;
   H.phase='result';bc();
 }
-function resetGame(){H.players.forEach(p=>{p.total=0;p.wins=0});H.round=0;H.champ=null;H.res=null;H.votes={};H.phase='lobby';bc()}
+function resetGame(){H.players.forEach(p=>{p.total=0;p.wins=0});H.round=0;H.champ=null;H.res=null;H.tiebreak=null;H.votes={};H.phase='lobby';bc()}
 
 // ---------- Jugador ----------
 let stage='';
@@ -214,6 +230,10 @@ function joinGame(c,retry){
 }
 function vote(n){
   if(n===me)return;
+  if(S&&S.tiebreak){
+    if(S.tiebreak.includes(me))return;
+    if(!S.tiebreak.includes(n))return;
+  }
   if(isHost)castVote(pid,n);
   else if(conn&&conn.open){conn.send({t:'vote',n});myVote=n;render()}
 }
@@ -243,8 +263,8 @@ function render(){
     return;
   }
   const k0=S.phase+S.round;if(k0!==stepKey){stepKey=k0;step=0}
-  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.champ,S.timed,S.players,myVote,me,step,mineV]);
-  if(sig===lastSig){const vc=$('#vc');if(vc)vc.textContent=S.voted+' de '+S.players.length+' han votado';return}
+  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.champ,S.tiebreak,S.timed,S.players,myVote,me,step,mineV]);
+  if(sig===lastSig){const vc=$('#vc');if(vc){const el=S.tiebreak?S.players.length-S.tiebreak.length:S.players.length;vc.textContent=S.voted+' de '+el+' han votado'}return}
   lastSig=sig;
   const ps=S.players,total=ps.length,cf=S.cfg,nm=n=>esc((ps.find(p=>p.n===n)||{}).name||'?');
   const lead=[...ps].sort((a,b)=>b.total-a.total||b.wins-a.wins);
@@ -261,10 +281,13 @@ function render(){
     h+=`<div class="players">${chips}</div>`;
     if(isHost)h+=cfgPanel()+`<button class="pri" data-a="next" ${total<2?'disabled':''}>Empezar (${total} jugadores)</button><button data-a="bots">${ps.length&&H.players.some(p=>p.bot)?'Quitar bots de prueba':'🤖 Rellenar con bots de prueba (hasta 15)'}</button>`;
   }else if(S.phase==='vote'){
+    const tb=S.tiebreak,iAmTied=tb&&tb.includes(me);
+    if(tb)h+=`<div class="win sm"><div class="big">⚔️ Desempate</div>Solo se puede votar a los empatados</div>`;
     h+=`<div class="q" style="font-size:${S.q.length>100?17:S.q.length>70?21:27}px">${esc(S.q)}</div>`;
     if(S.timed)h+=`<div class="tbar"><i id="tb" style="width:${S.cfg.secs?Math.max(0,((S.endAt||0)-Date.now())/(S.cfg.secs*1000)*100):0}%"></i></div><div id="tm" class="mute">⏱ ${Math.ceil(Math.max(0,(S.endAt||0)-Date.now())/1000)} s</div>`;
-    h+=`<div class="grid">${ps.map(p=>`<button class="opt ${myVote===p.n?'on':''}" data-a="vote" data-n="${p.n}" ${p.n===me?'disabled':''}><span class="n">${p.n}</span><span>${esc(p.name)}${p.n===me?' (tú)':''}</span></button>`).join('')}</div>
-    <p class="mute" style="text-align:center">${myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br><span id="vc">${S.voted} de ${total} han votado</span></p>`;
+    const votables=tb?ps.filter(p=>tb.includes(p.n)):ps;
+    h+=`<div class="grid">${votables.map(p=>`<button class="opt ${myVote===p.n?'on':''}" data-a="vote" data-n="${p.n}" ${p.n===me||iAmTied?'disabled':''}><span class="n">${p.n}</span><span>${esc(p.name)}${p.n===me?' (tú)':''}</span></button>`).join('')}</div>
+    <p class="mute" style="text-align:center">${iAmTied?'Estás en el desempate. No puedes votar en esta ronda.':myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':tb?'Vota para deshacer el empate.':'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br><span id="vc">${S.voted} de ${tb?total-tb.length:total} han votado</span></p>`;
     if(isHost)h+=`<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button data-a="skip">Saltar pregunta (no cuenta)</button>`;
   }else if(S.phase==='result'){
     const r=S.res,ct=n=>r.counts[n]||0,sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
@@ -275,7 +298,7 @@ function render(){
         ?`<div class="mine">Te han votado <b>${mineV.length}</b> ${mineV.length>1?'personas':'persona'}</div><div class="players">${mineV.map(n=>`<span class="chip"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`
         :`<div class="mine">Nadie te ha votado esta ronda 😅</div>`;
       h+=`<h2>Resumen de la ronda</h2>`;
-      h+=r.max?`<div class="win sm"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>${r.winners.length>1?'Empate':'Gana la ronda'} con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win sm"><div class="big">Nadie votó</div></div>`;
+      h+=r.max?(r.winners.length?`<div class="win sm"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>Gana la ronda con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win sm"><div class="big">Empate total</div>Nadie gana esta ronda</div>`):`<div class="win sm"><div class="big">Nadie votó</div></div>`;
       h+=sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?ct(p.n)/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${ct(p.n)}</span></div>`).join('');
     }else{
       const top=Math.max(0,...ps.map(p=>p.wins)),ls=ps.filter(p=>top>0&&p.wins===top);
