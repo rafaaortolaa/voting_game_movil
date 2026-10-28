@@ -101,7 +101,7 @@ h2{font:400 21px/1.2 Bungee,Impact,sans-serif;margin:22px 0 8px}h2 small{display
 <body>
 <div id="bg"></div>
 <div id="app"></div>
-<div class="ver">v8</div>
+<div class="ver">v9</div>
 <script src="preguntas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -112,7 +112,14 @@ const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const pid=ls.get('pid')||(()=>{const p=Math.random().toString(36).slice(2,10);ls.set('pid',p);return p})();
-const OPTS={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443'],username:'openrelayproject',credential:'openrelayproject'}]}};
+const OPTS={debug:1,config:{iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun2.l.google.com:19302'},
+  {urls:'stun:stun3.l.google.com:19302'},
+  {urls:'stun:stun4.l.google.com:19302'},
+  {urls:'stun:stun.cloudflare.com:3478'}
+],iceCandidatePoolSize:10}};
 let wl;async function keepAwake(){try{if(navigator.wakeLock&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
 let mineV=[],mineInitV=[],mineTbV=[],step=0,stepKey='',lastSig='';
 let myName=ls.get('name')||'',isHost=false,code='',peer,conn,conns={},H=null,S=null,me=null,myVote=null,err='',cq='',deck=[],busy=false;
@@ -131,6 +138,7 @@ function createGame(){
   peer.on('disconnected',()=>{try{if(!peer.destroyed)peer.reconnect()}catch(e){}});
   peer.on('error',e=>{if(e.type==='unavailable-id'){peer.destroy();createGame()}else if(!H){busy=false;isHost=false;err='No se pudo crear la partida ['+e.type+']. Revisa tu conexión.';render()}});
   peer.on('connection',c=>{
+    c.on('error',e=>console.warn('Host conn error',e));
     c.on('data',m=>{
       if(m.t==='join'&&m.pid){
         let p=H.players.find(x=>x.id===m.pid);
@@ -227,19 +235,25 @@ function joinGame(c,retry){
     err=opened?'Llego al servidor pero no al anfitrión ['+st+']. Prueba con otra red (datos o wifi).':'No llego al servidor de conexión [servidor accesible: '+reach+']. Abre el enlace en Chrome y desactiva DNS privado o bloqueadores.';
     busy=false;render();
   };
-  to=setTimeout(fail,9000);
+  to=setTimeout(fail,12000);
   peer=new Peer(OPTS);
   peer.on('open',()=>{
     opened=true;setStage('2/3 buscando partida');
     conn=peer.connect('hq-'+code,{reliable:true});
     conn.on('open',()=>{setStage('3/3 entrando');conn.send({t:'join',pid,name:myName})});
     conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;if(S.tiebreakLeft)S.tiebreakEnd=Date.now()+S.tiebreakLeft;me=m.you;myVote=m.voted;mineV=m.mine||[];mineInitV=m.mineInit||[];mineTbV=m.mineTb||[];render()}});
+    conn.on('error',e=>{console.warn('Conn err:',e);fail()});
     conn.on('close',()=>{if(S&&!done)return;if(S)setTimeout(()=>joinGame(code),1500)});
+    if(conn.peerConnection){
+      conn.peerConnection.oniceconnectionstatechange=()=>{
+        if(conn.peerConnection&&conn.peerConnection.iceConnectionState==='failed')fail();
+      };
+    }
   });
   peer.on('error',e=>{
     if(done)return;clearTimeout(to);done=true;
     if(S){setTimeout(()=>joinGame(c),3000);return}
-    err=e.type==='peer-unavailable'?'No existe la partida '+code+'. Revisa el código.':'Problema de conexión ['+e.type+'].';busy=false;render();
+    err=e.type==='peer-unavailable'?'No existe la partida '+code+'. Comprueba el código o que el anfitrión esté en la sala.':'Problema de conexión ['+e.type+'].';busy=false;render();
   });
 }
 function vote(n){
