@@ -48,13 +48,13 @@ async function keepAwake() {
 let mineV = [], mineInitV = [], mineTbV = [], step = 0, stepKey = '', lastSig = '';
 let myName = ls.get('name') || '', isHost = false, code = '', peer = null, conn = null, conns = {};
 let H = null, S = null, me = null, myVote = null, err = '', cq = '', stage = '', busy = false;
-let revealInterval = null;
+let isWaiting = false, revealInterval = null;
 
 const hashCode = () => (location.hash || '').replace('#', '').toUpperCase().slice(0, 4);
 
 // ---------- Salir y Volver atrás ----------
 function leaveGame(force = false) {
-  if (!force && S && S.phase !== 'lobby' && !confirm('¿Seguro que quieres salir de la partida?')) {
+  if (!force && S && S.phase !== 'lobby' && !isWaiting && !confirm('¿Seguro que quieres salir de la partida?')) {
     return;
   }
   if (revealInterval) {
@@ -79,6 +79,7 @@ function leaveGame(force = false) {
   err = '';
   myVote = null;
   me = null;
+  isWaiting = false;
   mineV = [];
   mineInitV = [];
   mineTbV = [];
@@ -123,6 +124,7 @@ function createGame() {
     opened = true;
     clearTimeout(timeout);
     code = c;
+    try { history.replaceState(null, '', '#' + c); } catch (e) { location.hash = c; }
     busy = false;
     H = {
       cfg: { mode: 'colegueo', target: 10, secs: 60 },
@@ -136,7 +138,8 @@ function createGame() {
       tiebreak: null,
       deadline: 0,
       champ: null,
-      players: [{ id: pid, n: 1, name: myName, total: 0, wins: 0 }]
+      players: [{ id: pid, n: 1, name: myName, total: 0, wins: 0 }],
+      waiting: []
     };
     me = 1;
     bc();
@@ -165,18 +168,59 @@ function createGame() {
 
   peer.on('connection', c => {
     c.on('error', e => console.warn('Conn err', e));
+    c.on('close', () => {
+      if (H && H.waiting && c._pid) {
+        H.waiting = H.waiting.filter(w => w.id !== c._pid);
+        bcSoon();
+      }
+    });
     c.on('data', m => {
       if (m.t === 'join' && m.pid) {
-        let p = H.players.find(x => x.id === m.pid);
-        if (!p) {
-          p = { id: m.pid, n: H.players.length + 1, name: String(m.name || '?').slice(0, 14), total: 0, wins: 0 };
-          H.players.push(p);
-        } else if (m.name) {
-          p.name = String(m.name).slice(0, 14);
+        const cleanName = String(m.name || '?').trim().slice(0, 14);
+        if (!cleanName || cleanName === '?') {
+          c.send({ t: 'err', msg: 'Introduce un nombre válido para jugar.' });
+          setTimeout(() => { try { c.close(); } catch (e) {} }, 500);
+          return;
         }
-        conns[m.pid] = c;
-        c._pid = m.pid;
-        bc();
+
+        // Validar que el nombre no esté repetido
+        const nameTaken = H.players.some(p => p.id !== m.pid && p.name.trim().toLowerCase() === cleanName.toLowerCase()) ||
+          ((H.waiting || []).some(w => w.id !== m.pid && w.name.trim().toLowerCase() === cleanName.toLowerCase()));
+
+        if (nameTaken) {
+          c.send({ t: 'err', msg: `El nombre "${cleanName}" ya está en uso. Elige otro nombre para entrar.` });
+          setTimeout(() => { try { c.close(); } catch (e) {} }, 500);
+          return;
+        }
+
+        let p = H.players.find(x => x.id === m.pid);
+        if (p) {
+          p.name = cleanName;
+          conns[m.pid] = c;
+          c._pid = m.pid;
+          bc();
+          return;
+        }
+
+        if (H.phase === 'lobby') {
+          p = { id: m.pid, n: H.players.length + 1, name: cleanName, total: 0, wins: 0 };
+          H.players.push(p);
+          conns[m.pid] = c;
+          c._pid = m.pid;
+          bc();
+        } else {
+          // Partida ya empezada: entra en espera para la siguiente ronda
+          if (!H.waiting) H.waiting = [];
+          let w = H.waiting.find(x => x.id === m.pid);
+          if (!w) {
+            H.waiting.push({ id: m.pid, name: cleanName });
+          } else {
+            w.name = cleanName;
+          }
+          conns[m.pid] = c;
+          c._pid = m.pid;
+          bc();
+        }
       } else if (m.t === 'vote' && H.phase === 'vote' && c._pid) {
         castVote(c._pid, m.n);
       }
@@ -200,7 +244,9 @@ const pub = () => ({
   timed: !!H.deadline,
   left: H.deadline ? Math.max(0, H.deadline - Date.now()) : 0,
   voted: Object.keys(H.votes).length,
-  players: H.players.map(p => ({ n: p.n, name: p.name, total: p.total, wins: p.wins }))
+  players: H.players.map(p => ({ n: p.n, name: p.name, total: p.total, wins: p.wins })),
+  waitingCount: (H.waiting || []).length,
+  waitingNames: (H.waiting || []).map(w => w.name)
 });
 
 function bc() {
@@ -211,11 +257,13 @@ function bc() {
     const c = conns[id];
     if (c && c.open) {
       const p = H.players.find(x => x.id === id);
+      const isWait = !p && !!(H.waiting && H.waiting.some(w => w.id === id));
       const pn = p && p.n;
       c.send({
         t: 's',
         s: S,
         you: pn,
+        waiting: isWait,
         voted: H.votes[id] != null ? H.votes[id] : null,
         mine: (H.res && pn && H.res.voters[pn]) || [],
         mineInit: (H.initialRes && pn && H.initialRes.voters[pn]) || [],
@@ -251,6 +299,20 @@ function castVote(id, n) {
 }
 
 function nextQ() {
+  if (H.waiting && H.waiting.length) {
+    H.waiting.forEach(w => {
+      if (!H.players.some(p => p.id === w.id)) {
+        H.players.push({
+          id: w.id,
+          n: H.players.length + 1,
+          name: w.name,
+          total: 0,
+          wins: 0
+        });
+      }
+    });
+    H.waiting = [];
+  }
   const m = H.cfg.mode;
   if (!decks[m].length) decks[m] = Q[m].map(q => [Math.random(), q]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
   H.q = cq.trim() || decks[m].pop();
@@ -282,11 +344,15 @@ function toggleBots() {
     H.players = H.players.filter(p => !p.bot);
     H.players.forEach((p, i) => p.n = i + 1);
   } else {
-    const bn = [...BOT_NAMES].sort(() => Math.random() - .5);
+    const existing = new Set([
+      ...H.players.map(p => p.name.trim().toLowerCase()),
+      ...(H.waiting || []).map(w => w.name.trim().toLowerCase())
+    ]);
+    const available = BOT_NAMES.filter(b => !existing.has(b.toLowerCase()));
     let bi = 0;
-    while (H.players.length < 15) {
+    while (H.players.length < 15 && bi < available.length) {
       const i = H.players.length + 1;
-      H.players.push({ id: 'bot' + i, n: i, name: bn[bi++ % bn.length], total: 0, wins: 0, bot: true });
+      H.players.push({ id: 'bot' + i, n: i, name: available[bi++], total: 0, wins: 0, bot: true });
     }
   }
   bc();
@@ -344,6 +410,20 @@ function reveal() {
 }
 
 function resetGame() {
+  if (H.waiting && H.waiting.length) {
+    H.waiting.forEach(w => {
+      if (!H.players.some(p => p.id === w.id)) {
+        H.players.push({
+          id: w.id,
+          n: H.players.length + 1,
+          name: w.name,
+          total: 0,
+          wins: 0
+        });
+      }
+    });
+    H.waiting = [];
+  }
   H.players.forEach(p => { p.total = 0; p.wins = 0; });
   H.round = 0;
   H.champ = null;
@@ -369,6 +449,7 @@ function joinGame(c, retry) {
     return render();
   }
   code = c;
+  try { history.replaceState(null, '', '#' + c); } catch (e) { location.hash = c; }
   busy = true;
   err = '';
   setStage('1/3 servidor');
@@ -414,10 +495,18 @@ function joinGame(c, retry) {
         if (S.timed) S.endAt = Date.now() + S.left;
         if (S.tiebreakLeft) S.tiebreakEnd = Date.now() + S.tiebreakLeft;
         me = m.you;
+        isWaiting = !!m.waiting;
         myVote = m.voted;
         mineV = m.mine || [];
         mineInitV = m.mineInit || [];
         mineTbV = m.mineTb || [];
+        render();
+      } else if (m.t === 'err') {
+        clearTimeout(to);
+        done = true;
+        busy = false;
+        err = m.msg || 'No se pudo entrar a la partida.';
+        try { conn.close(); } catch (e) {}
         render();
       }
     });
@@ -545,7 +634,7 @@ function render() {
   const k0 = S.phase + S.round;
   if (k0 !== stepKey) { stepKey = k0; step = 0; }
   const tbWaiting = !!(S.tiebreak && S.tiebreakEnd && Date.now() < S.tiebreakEnd);
-  const sig = JSON.stringify([S.phase, S.round, S.q, S.cfg, S.res, S.initialRes, S.tbRes, S.champ, S.tiebreak, tbWaiting, S.timed, S.players, myVote, me, step, mineV, mineInitV, mineTbV]);
+  const sig = JSON.stringify([S.phase, S.round, S.q, S.cfg, S.res, S.initialRes, S.tbRes, S.champ, S.tiebreak, tbWaiting, S.timed, S.players, myVote, me, step, mineV, mineInitV, mineTbV, isWaiting, S.waitingCount]);
   
   if (sig === lastSig) {
     const vc = $('#vc');
@@ -561,6 +650,61 @@ function render() {
   document.body.dataset.mode = cf.mode;
   const chips = ps.map(p => `<span class="chip"><b>${p.n}</b>${esc(p.name)}${p.n === me ? ' (tú)' : ''}</span>`).join('');
   
+  // Pantalla de espera para nuevos jugadores que se unen a una partida ya empezada
+  if (isWaiting) {
+    let hw = `
+      <div class="top">
+        <div class="top-left">
+          <button class="btn-back" data-a="leave" title="Salir de la partida">← Salir</button>
+          <span>${S.round ? 'Ronda ' + S.round : 'En espera'}</span>
+        </div>
+        <span class="chip">${MODE(cf.mode)} · ${S.code}</span>
+      </div>
+      <div class="win sm" style="text-align:center;margin-top:12px;">
+        <div class="big">⏳ Ronda en curso</div>
+        ¡Te has conectado con éxito! Entrarás a jugar en la <b>Ronda ${S.round + 1}</b> en cuanto termine esta pregunta.
+      </div>
+    `;
+
+    if (S.phase === 'vote') {
+      hw += `
+        <p class="mute" style="text-align:center;margin:18px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1px">Pregunta en votación ahora:</p>
+        <div class="q" style="font-size:${S.q.length > 100 ? 17 : S.q.length > 70 ? 21 : 25}px;text-align:center">${esc(S.q)}</div>
+      `;
+      if (S.timed) {
+        hw += `
+          <div class="tbar"><i id="tb" style="width:${S.cfg.secs ? Math.max(0, ((S.endAt || 0) - Date.now()) / (S.cfg.secs * 1000) * 100) : 0}%"></i></div>
+          <div id="tm" class="mute">⏱ ${Math.ceil(Math.max(0, (S.endAt || 0) - Date.now()) / 1000)} s</div>
+        `;
+      }
+      hw += `
+        <p class="mute" style="text-align:center;margin-top:14px;">
+          <span id="vc">${S.voted} de ${total} han votado</span>
+        </p>
+      `;
+    } else if (S.phase === 'result') {
+      hw += `
+        <p class="mute" style="text-align:center;margin:18px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1px">Pregunta de esta ronda:</p>
+        <div class="q" style="font-size:20px;text-align:center">${esc(S.q)}</div>
+        <div class="mine" style="text-align:center;">Viendo resultados de la ronda... El anfitrión pasará a la siguiente pregunta en breve.</div>
+      `;
+    }
+
+    hw += `
+      <h2 style="font-size:18px;margin-top:24px;">Jugadores en la partida (${total})</h2>
+      <div class="players">${chips}</div>
+      <p class="mute" style="text-align:center;margin-top:22px;font-size:13px;line-height:1.5;">
+        ✨ Mantén esta pantalla abierta. Te incorporarás automáticamente en cuanto empiece la siguiente ronda.
+      </p>
+    `;
+
+    const kw = 'waiting-' + S.phase + S.round;
+    app.innerHTML = hw;
+    enter(kw);
+    updTimer();
+    return;
+  }
+
   // Barra superior con botón para salir / volver atrás
   let h = `
     <div class="top">
@@ -628,6 +772,9 @@ function render() {
         </p>
       `;
       if (isHost) {
+        if (S.waitingCount > 0) {
+          h += `<p class="mute" style="text-align:center;font-size:13px;color:var(--pri);margin-bottom:10px;">⏳ ${S.waitingCount} nuevo(s) jugador(es) esperando entrar en la siguiente ronda: <b>${esc(S.waitingNames.join(', '))}</b></p>`;
+        }
         h += `<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button class="sec" data-a="skip">Saltar pregunta (no cuenta)</button>`;
       }
     }
@@ -709,7 +856,11 @@ function render() {
         if (S.champ) {
           h += `<button class="pri" data-a="end">Terminar partida</button>`;
         } else {
-          h += cfgPanel(true) + `
+          h += cfgPanel(true);
+          if (S.waitingCount > 0) {
+            h += `<div class="mine" style="border:1.5px solid var(--pri);background:rgba(255,100,50,0.1);margin:12px 0;text-align:center;">👋 <b>${S.waitingCount}</b> jugador(es) en espera: <b>${esc(S.waitingNames.join(', '))}</b> (se incorporarán al pulsar siguiente)</div>`;
+          }
+          h += `
             <input id="cq" placeholder="Escribe tu propia pregunta (opcional)" value="${esc(cq)}">
             <button class="pri" data-a="next">Siguiente pregunta para todos</button>
             <button class="sec btn-danger" data-a="end">Terminar partida ahora</button>
@@ -840,6 +991,13 @@ document.addEventListener('visibilitychange', () => {
 
 app.addEventListener('input', e => {
   if (e.target.id === 'cq') cq = e.target.value;
+});
+
+window.addEventListener('beforeunload', e => {
+  if (H || (S && S.phase !== 'lobby')) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
 });
 
 // Inicializar la aplicación
