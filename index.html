@@ -87,6 +87,11 @@ button.pri{margin:8px 0}
 h2{font:400 21px/1.2 Bungee,Impact,sans-serif;margin:22px 0 8px}h2 small{display:block;color:var(--mute);font:600 15px Nunito,sans-serif}
 .mine{background:var(--card);border-left:5px solid var(--pump);border-radius:10px;padding:10px 12px;margin:0 0 14px}
 .vs{color:var(--mute);font-weight:600;font-size:14px;margin:-4px 0 8px 46px}
+.dots{display:flex;gap:8px;justify-content:center;margin:4px 0 12px}.dots i{width:9px;height:9px;border-radius:9px;background:var(--line)}.dots i.on{background:var(--pump);width:26px}
+.mine{font-size:21px}.mine b{color:var(--pump);font-family:Bungee,Impact,sans-serif;font-weight:400}
+.nav{margin-top:16px}.nav button{margin:0}
+#tm{min-height:1.5em}
+#app{overflow-anchor:none}
 </style>
 </head>
 <body>
@@ -104,6 +109,7 @@ const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:
 const pid=ls.get('pid')||(()=>{const p=Math.random().toString(36).slice(2,10);ls.set('pid',p);return p})();
 const OPTS={config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'},{urls:['turn:eu-0.turn.peerjs.com:3478','turn:us-0.turn.peerjs.com:3478'],username:'peerjs',credential:'peerjsp'},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turns:openrelay.metered.ca:443'],username:'openrelayproject',credential:'openrelayproject'}]}};
 let wl;async function keepAwake(){try{if(navigator.wakeLock&&document.visibilityState==='visible')wl=await navigator.wakeLock.request('screen')}catch(e){}}
+let mineV=[],step=0,stepKey='',lastSig='';
 let myName=ls.get('name')||'',isHost=false,code='',peer,conn,conns={},H=null,S=null,me=null,myVote=null,err='',cq='',deck=[],busy=false;
 const hashCode=()=>(location.hash||'').replace('#','').toUpperCase().slice(0,4);
 
@@ -128,8 +134,8 @@ function createGame(){
     });
   });
 }
-const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res,code,champ:H.champ,timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
-function bc(){S=pub();S.endAt=H.deadline;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]!=null?H.votes[id]:null})}}myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
+const pub=()=>({cfg:H.cfg,phase:H.phase,round:H.round,q:H.q,res:H.res?{counts:H.res.counts,max:H.res.max,winners:H.res.winners}:null,code,champ:H.champ,timed:!!H.deadline,left:H.deadline?Math.max(0,H.deadline-Date.now()):0,voted:Object.keys(H.votes).length,players:H.players.map(p=>({n:p.n,name:p.name,total:p.total,wins:p.wins}))});
+function bc(){S=pub();S.endAt=H.deadline;for(const id in conns){const c=conns[id];if(c&&c.open){const p=H.players.find(x=>x.id===id);c.send({t:'s',s:S,you:p&&p.n,voted:H.votes[id]!=null?H.votes[id]:null,mine:(H.res&&p&&H.res.voters[p.n])||[]})}}mineV=(H.res&&H.res.voters[me])||[];myVote=H.votes[pid]!=null?H.votes[pid]:null;render()}
 let bt=0;function bcSoon(){if(bt)return;bt=setTimeout(()=>{bt=0;bc()},150)}
 function castVote(id,n){
   const v=H.players.find(p=>p.id===id);
@@ -194,7 +200,7 @@ function joinGame(c,retry){
     opened=true;setStage('2/3 buscando partida');
     conn=peer.connect('hq-'+code,{reliable:true});
     conn.on('open',()=>{setStage('3/3 entrando');conn.send({t:'join',pid,name:myName})});
-    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;me=m.you;myVote=m.voted;render()}});
+    conn.on('data',m=>{if(m.t==='s'){clearTimeout(to);done=true;busy=false;S=m.s;if(S.timed)S.endAt=Date.now()+S.left;me=m.you;myVote=m.voted;mineV=m.mine||[];render()}});
     conn.on('close',()=>{if(S&&!done)return;if(S)setTimeout(()=>joinGame(code),1500)});
   });
   peer.on('error',e=>{
@@ -233,6 +239,10 @@ function render(){
     document.body.dataset.mode='';enter('home'+busy+err);
     return;
   }
+  const k0=S.phase+S.round;if(k0!==stepKey){stepKey=k0;step=0}
+  const sig=JSON.stringify([S.phase,S.round,S.q,S.cfg,S.res,S.champ,S.timed,S.players,myVote,me,step,mineV]);
+  if(sig===lastSig){const vc=$('#vc');if(vc)vc.textContent=S.voted+' de '+S.players.length+' han votado';return}
+  lastSig=sig;
   const ps=S.players,total=ps.length,cf=S.cfg,nm=n=>esc((ps.find(p=>p.n===n)||{}).name||'?');
   const lead=[...ps].sort((a,b)=>b.total-a.total||b.wins-a.wins);
   document.body.dataset.mode=cf.mode;
@@ -249,42 +259,55 @@ function render(){
     if(isHost)h+=cfgPanel()+`<button class="pri" data-a="next" ${total<2?'disabled':''}>Empezar (${total} jugadores)</button><button data-a="bots">${ps.length&&H.players.some(p=>p.bot)?'Quitar bots de prueba':'🤖 Rellenar con bots de prueba (hasta 15)'}</button>`;
   }else if(S.phase==='vote'){
     h+=`<div class="q" style="font-size:${S.q.length>100?17:S.q.length>70?21:27}px">${esc(S.q)}</div>`;
-    if(S.timed)h+=`<div class="tbar"><i id="tb"></i></div><div id="tm" class="mute"></div>`;
+    if(S.timed)h+=`<div class="tbar"><i id="tb" style="width:${S.cfg.secs?Math.max(0,((S.endAt||0)-Date.now())/(S.cfg.secs*1000)*100):0}%"></i></div><div id="tm" class="mute">⏱ ${Math.ceil(Math.max(0,(S.endAt||0)-Date.now())/1000)} s</div>`;
     h+=`<div class="grid">${ps.map(p=>`<button class="opt ${myVote===p.n?'on':''}" data-a="vote" data-n="${p.n}" ${p.n===me?'disabled':''}><span class="n">${p.n}</span><span>${esc(p.name)}${p.n===me?' (tú)':''}</span></button>`).join('')}</div>
-    <p class="mute" style="text-align:center">${myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br>${S.voted} de ${total} han votado</p>`;
+    <p class="mute" style="text-align:center">${myVote?'Voto enviado. Puedes cambiarlo hasta que se revele.':'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br><span id="vc">${S.voted} de ${total} han votado</span></p>`;
     if(isHost)h+=`<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button data-a="skip">Saltar pregunta (no cuenta)</button>`;
   }else if(S.phase==='result'){
-    const r=S.res,v=n=>r.voters[n]||[],ct=n=>r.counts[n]||0,mine=v(me);
-    const sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
-    h+=`<div class="mute">${esc(S.q)}</div>`;
-    h+=r.max?`<div class="win"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>${r.winners.length>1?'Empate':'Gana la ronda'} con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win"><div class="big">Nadie votó</div></div>`;
-    h+=`<div class="mine">${mine.length?`Te han votado <b>${mine.length}</b>: ${mine.map(nm).join(', ')}`:'Nadie te ha votado esta ronda'}</div>`;
-    h+=sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?ct(p.n)/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${ct(p.n)}</span></div>${ct(p.n)?`<div class="vs">Votado por ${v(p.n).map(nm).join(', ')}</div>`:''}`).join('');
-    h+=`<h2>👑 Va ganando: ${esc(lead[0].name)} <small>${lead[0].total} votos en total</small></h2>`;
-    h+=lead.map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">${p.total} votos · 🏆 ${p.wins}/${cf.target}</span></div>`).join('');
-    if(S.champ)h+=`<div class="win" style="margin-top:16px"><div class="big">🏆 ${S.champ.map(nm).join(' y ')}</div>${S.champ.length>1?'llegan':'llega'} a ${cf.target} rondas ganadas</div>`;
-    if(isHost){
-      if(S.champ)h+=`<button class="pri" data-a="end">Terminar partida</button>`;
-      else h+=cfgPanel()+`<input id="cq" placeholder="Tu propia pregunta (opcional)" value="${esc(cq)}"><button class="pri" data-a="next">Siguiente pregunta</button><button data-a="end">Terminar partida</button>`;
-    }else h+=`<p class="mute" style="text-align:center">${S.champ?'Fin de la partida…':'Esperando la siguiente pregunta…'}</p>`;
+    const r=S.res,ct=n=>r.counts[n]||0,sorted=[...ps].sort((a,b)=>ct(b.n)-ct(a.n));
+    h+=`<div class="dots">${[0,1,2].map(i=>`<i class="${i===step?'on':''}"></i>`).join('')}</div>`;
+    if(step<2)h+=`<div class="mute">${esc(S.q)}</div>`;
+    if(step===0){
+      h+=`<h2>Quién te ha votado</h2>`+(mineV.length
+        ?`<div class="mine">Te han votado <b>${mineV.length}</b> ${mineV.length>1?'personas':'persona'}</div><div class="players">${mineV.map(n=>`<span class="chip"><b>${n}</b>${nm(n)}</span>`).join('')}</div>`
+        :`<div class="mine">Nadie te ha votado esta ronda 😅</div>`);
+    }else if(step===1){
+      h+=r.max?`<div class="win"><div class="big">${r.winners.map(n=>n+' · '+nm(n)).join('<br>')}</div>${r.winners.length>1?'Empate':'Gana la ronda'} con ${r.max} ${r.max>1?'votos':'voto'}</div>`:`<div class="win"><div class="big">Nadie votó</div></div>`;
+      h+=`<h2>Resumen de la ronda</h2>`+sorted.map(p=>`<div class="bar"><span class="badge">${p.n}</span><div class="t"><div class="f" style="width:${r.max?ct(p.n)/r.max*100:0}%"></div><span>${esc(p.name)}</span></div><span class="v">${ct(p.n)}</span></div>`).join('');
+    }else{
+      h+=`<h2>👑 Va ganando: ${esc(lead[0].name)} <small>${lead[0].total} votos en total</small></h2>`;
+      h+=lead.map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">${p.total} votos · 🏆 ${p.wins}/${cf.target}</span></div>`).join('');
+      if(S.champ)h+=`<div class="win" style="margin-top:16px"><div class="big">🏆 ${S.champ.map(nm).join(' y ')}</div>${S.champ.length>1?'llegan':'llega'} a ${cf.target} rondas ganadas</div>`;
+    }
+    h+=`<div class="row nav">${step>0?`<button data-a="step" data-d="-1">‹ Atrás</button>`:''}${step<2?`<button class="pri" data-a="step" data-d="1">Siguiente ›</button>`:''}</div>`;
+    if(step===2){
+      if(isHost){
+        if(S.champ)h+=`<button class="pri" data-a="end">Terminar partida</button>`;
+        else h+=cfgPanel()+`<input id="cq" placeholder="Tu propia pregunta (opcional)" value="${esc(cq)}"><button class="pri" data-a="next">Siguiente pregunta para todos</button><button data-a="end">Terminar partida</button>`;
+      }else h+=`<p class="mute" style="text-align:center">${S.champ?'Fin de la partida…':'Esperando al anfitrión…'}</p>`;
+    }
   }else{
     const win=(S.champ&&S.champ.length?S.champ:[ [...ps].sort((a,b)=>b.wins-a.wins||b.total-a.total)[0].n ]);
     h+=`<div class="win"><div class="big">🏆 ${win.map(nm).join(' y ')}</div>${win.length>1?'ganan':'gana'} la partida</div><h2>Clasificación final</h2>`;
     h+=[...ps].sort((a,b)=>b.wins-a.wins||b.total-a.total).map(p=>`<div class="rank"><span class="badge">${p.n}</span><span>${esc(p.name)}</span><span class="mute">🏆 ${p.wins} · ${p.total} votos</span></div>`).join('');
     if(isHost)h+=`<button class="pri" data-a="again" style="margin-top:16px">Nueva partida (mismos jugadores)</button>`;
   }
+  const k=S.phase+S.round+'-'+step,y=window.scrollY||0,changed=k!==lastKey;
   app.innerHTML=h;
-  const k=S.phase+S.round;
+  window.scrollTo(0,changed?0:y);
   enter(k);
-  if((S.phase==='result'||S.phase==='end')&&(S.champ||S.phase==='result')&&k!==lastBurst){lastBurst=k;burst(S.champ?['🏆','🎃','👻','🦇','💀']:['🎃','👻','🦇','💀'])}
+  const bk=S.phase==='result'?((step===1||(step===2&&S.champ))?k:''):(S.phase==='end'?k:'');
+  if(bk&&bk!==lastBurst){lastBurst=bk;burst(S.champ?['🏆','🎃','👻','🦇','💀']:['🎃','👻','🦇','💀'])}
+  updTimer();
 }
 let lastBurst='';
-setInterval(()=>{
+function updTimer(){
   if(!S||S.phase!=='vote'||!S.timed)return;
-  const tm=$('#tm'),tb=$('#tb');if(!tm)return;
+  const tm=$('#tm'),tb=$('#tb');if(!tm||!tb)return;
   const l=Math.max(0,(S.endAt||0)-Date.now());
   tm.textContent='⏱ '+Math.ceil(l/1000)+' s';tb.style.width=(S.cfg.secs?l/(S.cfg.secs*1000)*100:0)+'%';
-},250);
+}
+setInterval(updTimer,250);
 app.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;
   const a=b.dataset.a,nmI=$('#nm');
@@ -297,6 +320,7 @@ app.addEventListener('click',e=>{
     return joinGame(c);
   }
   if(a==='vote')return vote(+b.dataset.n);
+  if(a==='step'){step=Math.max(0,Math.min(2,step+(+b.dataset.d)));return render()}
   if(!isHost||!H)return;
   const d=+b.dataset.d;
   if(a==='next')nextQ();
