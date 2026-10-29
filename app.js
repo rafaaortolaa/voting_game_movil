@@ -20,17 +20,31 @@ const pid = ls.get('pid') || (() => {
   return p;
 })();
 
-// Configuración STUN optimizada para WebRTC
+// Configuración WebRTC híbrida: STUN (conexión directa P2P para WiFi) + TURN Relay (para Datos Móviles 4G/5G y CGNAT)
 const OPTS = {
   debug: 1,
   config: {
     iceServers: [
+      // STUN de Google y Cloudflare para conexiones directas rápidas en misma red o WiFi
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
       { urls: 'stun:stun2.l.google.com:19302' },
       { urls: 'stun:stun3.l.google.com:19302' },
       { urls: 'stun:stun4.l.google.com:19302' },
-      { urls: 'stun:stun.cloudflare.com:3478' }
+      { urls: 'stun:stun.cloudflare.com:3478' },
+      { urls: 'stun:openrelay.metered.ca:80' },
+      // TURN Relay OpenRelay (Metered) para atravesar NAT simétrico (datos móviles 4G/5G, CGNAT, firewalls de operadoras)
+      // Puertos 80 y 443 (UDP/TCP) y TURNS con TLS para evitar bloqueos de operadores de telefonía móvil
+      {
+        urls: [
+          'turn:openrelay.metered.ca:80',
+          'turn:openrelay.metered.ca:443',
+          'turn:openrelay.metered.ca:443?transport=tcp',
+          'turns:openrelay.metered.ca:443?transport=tcp'
+        ],
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      }
     ],
     iceCandidatePoolSize: 10
   }
@@ -117,7 +131,7 @@ function createGame() {
       try { peer && peer.destroy(); } catch (e) {}
       render();
     }
-  }, 7000);
+  }, 14000);
 
   peer = new Peer('hq-' + c, OPTS);
   peer.on('open', () => {
@@ -468,19 +482,30 @@ function joinGame(c, retry) {
     try { await fetch('https://0.peerjs.com/', { mode: 'no-cors', cache: 'no-store' }); reach = 'sí'; } catch (e) {}
     const st = conn && conn.peerConnection ? conn.peerConnection.iceConnectionState : '-';
     err = opened
-      ? 'Llego al servidor pero no al anfitrión [' + st + ']. Comprueba que el anfitrión tenga la sala creada.'
+      ? 'No se pudo conectar con el anfitrión [' + st + ']. Comprueba que el anfitrión tenga la sala creada y la pantalla encendida.'
       : 'No llego al servidor de conexión [servidor accesible: ' + reach + ']. Revisa tu conexión a internet.';
     busy = false;
     render();
   };
 
-  to = setTimeout(fail, 10000);
+  to = setTimeout(fail, 20000);
   peer = new Peer(OPTS);
   peer.on('open', () => {
     opened = true;
     setStage('2/3 buscando partida');
     conn = peer.connect('hq-' + code, { reliable: true });
     
+    // Monitorear progreso de conexión ICE (útil en datos móviles y TURN)
+    try {
+      if (conn.peerConnection) {
+        conn.peerConnection.addEventListener('iceconnectionstatechange', () => {
+          const s = conn.peerConnection.iceConnectionState;
+          if (s === 'checking') setStage('2/3 negociando conexión…');
+          else if (s === 'connected' || s === 'completed') setStage('3/3 entrando…');
+        });
+      }
+    } catch (e) {}
+
     conn.on('open', () => {
       setStage('3/3 entrando');
       conn.send({ t: 'join', pid, name: myName });
@@ -520,6 +545,12 @@ function joinGame(c, retry) {
       if (S && !done) return;
       if (S) setTimeout(() => joinGame(code), 1500);
     });
+  });
+
+  peer.on('disconnected', () => {
+    if (!peer.destroyed && !done) {
+      try { peer.reconnect(); } catch (e) {}
+    }
   });
 
   peer.on('error', e => {
@@ -988,6 +1019,23 @@ document.addEventListener('visibilitychange', () => {
     joinGame(code);
   }
 });
+
+// Reconectar si el móvil recupera cobertura o cambia entre WiFi y Datos
+window.addEventListener('online', () => {
+  keepAwake();
+  if (isHost) {
+    if (peer && peer.disconnected && !peer.destroyed) try { peer.reconnect(); } catch (e) {}
+  } else if (S && (!conn || !conn.open)) {
+    joinGame(code);
+  }
+});
+
+// Heartbeat preventivo para mantener vivo el registro en el servidor de señalización
+setInterval(() => {
+  if (isHost && peer && peer.disconnected && !peer.destroyed) {
+    try { peer.reconnect(); } catch (e) {}
+  }
+}, 5000);
 
 app.addEventListener('input', e => {
   if (e.target.id === 'cq') cq = e.target.value;
