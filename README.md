@@ -8,7 +8,7 @@ Cada jugador se conecta desde su propio móvil mediante un código de sala o esc
 
 ## ✨ Características Principales
 
-- **🌐 Multijugador P2P en Tiempo Real**: Conexión directa entre dispositivos mediante **WebRTC** y **PeerJS** sin servidores centralizados de backend ni bases de datos.
+- **🌐 Multijugador Universal en Tiempo Real**: Conexión instantánea a través de **WebSockets seguros (WSS con TLS)** sobre el puerto 443 estándar, 100% compatible con cualquier teléfono móvil (iPhone, Android, Xiaomi, etc.) y cualquier tipo de red (WiFi, Datos móviles 4G/5G, CGNAT o modo incógnito).
 - **📱 Entrada rápida por QR o Código**: Entra en 2 segundos escaneando el código QR generado en la pantalla del anfitrión o escribiendo el código de 4 letras.
 - **🎭 Dos Modos de Juego**:
   - 😄 **Colegueo**: Preguntas desenfadadas, anécdotas y humor entre amigos.
@@ -49,9 +49,9 @@ Cada jugador se conecta desde su propio móvil mediante un código de sala o esc
 ## 📂 Estructura de Archivos
 
 ```
-├── index.html        # Estructura principal y carga de librerías (PeerJS, QR)
+├── index.html        # Estructura principal y carga de librerías (WSS, QR)
 ├── style.css         # Diseño visual, sistema de colores, animaciones y responsive
-├── app.js            # Lógica completa del juego, gestión P2P, estados y votaciones
+├── app.js            # Lógica completa del juego, gestión de salas, estados y votaciones
 ├── preguntas.js      # Banco de preguntas clasificadas por modo (Colegueo y Fuerte)
 └── README.md         # Documentación del proyecto
 ```
@@ -66,7 +66,7 @@ Puedes añadir tus propias preguntas fácilmente editando el archivo [`preguntas
 const Q = {
   colegueo: [
     "¿Quién tiene más papeletas para...",
-    "Señala a quien sería capaz de..."
+    "¿Quién sería capaz de..."
   ],
   fuerte: [
     "¿Quién es más probable que...",
@@ -108,7 +108,7 @@ npx serve .
 ## 🔒 Arquitectura y Privacidad
 
 - **Sin Base de Datos**: No se almacena ninguna información personal, nombres ni resultados en servidores externos.
-- **Punto a Punto (WebRTC)**: La comunicación fluye directamente entre el móvil del anfitrión y los dispositivos de los jugadores a través de canales de datos cifrados de WebRTC.
+- **Conexión Cifrada (WSS TLS)**: La comunicación en tiempo real viaja cifrada de extremo a extremo a través del puerto seguro 443 (WebSockets seguros), compatible con cualquier navegador y red móvil.
 - **Identificador de Sesión**: Cada navegador genera un identificador local aleatorio (`pid`) en `localStorage` únicamente para permitir la reconexión si se pierde la conexión de red temporalmente.
 
 ---

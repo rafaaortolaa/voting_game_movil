@@ -12,10 +12,15 @@
 <body>
   <div id="bg"></div>
   <div id="app"></div>
-  <div class="ver">v12</div>
+  <div class="ver">v13</div>
 
-  <!-- Librerías de red y QR -->
-  <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- Librerías de red (WebSocket seguro universal) y QR -->
+  <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.5/dist/mqtt.min.js"></script>
+  <script>
+    if (typeof mqtt === 'undefined') {
+      document.write('<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"><\/script>');
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 
   <!-- Archivos del juego -->

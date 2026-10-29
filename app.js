@@ -20,35 +20,15 @@ const pid = ls.get('pid') || (() => {
   return p;
 })();
 
-// Configuración WebRTC híbrida: STUN (conexión directa P2P para WiFi) + TURN Relay (para Datos Móviles 4G/5G y CGNAT)
-const OPTS = {
-  debug: 1,
-  config: {
-    iceServers: [
-      // STUN de Google y Cloudflare para conexiones directas rápidas en misma red o WiFi
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' },
-      { urls: 'stun:stun.cloudflare.com:3478' },
-      { urls: 'stun:openrelay.metered.ca:80' },
-      // TURN Relay OpenRelay (Metered) para atravesar NAT simétrico (datos móviles 4G/5G, CGNAT, firewalls de operadoras)
-      // Puertos 80 y 443 (UDP/TCP) y TURNS con TLS para evitar bloqueos de operadores de telefonía móvil
-      {
-        urls: [
-          'turn:openrelay.metered.ca:80',
-          'turn:openrelay.metered.ca:443',
-          'turn:openrelay.metered.ca:443?transport=tcp',
-          'turns:openrelay.metered.ca:443?transport=tcp'
-        ],
-        username: 'openrelayproject',
-        credential: 'openrelayproject'
-      }
-    ],
-    iceCandidatePoolSize: 10
-  }
-};
+// Servidores WebSocket seguros (WSS sobre puerto 443 estándar)
+// Garantizan compatibilidad 100% universal con cualquier teléfono móvil (iPhone, Android, Xiaomi, etc.)
+// y cualquier red (WiFi, Datos móviles 4G/5G, CGNAT, Safari privado o iCloud Private Relay).
+const BROKERS = [
+  'wss://broker.emqx.io:8084/mqtt',
+  'wss://broker.hivemq.com:8884/mqtt'
+];
+let brokerIdx = 0;
+let netClient = null;
 
 let wl;
 async function keepAwake() {
@@ -60,7 +40,7 @@ async function keepAwake() {
 }
 
 let mineV = [], mineInitV = [], mineTbV = [], step = 0, stepKey = '', lastSig = '';
-let myName = ls.get('name') || '', isHost = false, code = '', peer = null, conn = null, conns = {};
+let myName = ls.get('name') || '', isHost = false, code = '';
 let H = null, S = null, me = null, myVote = null, err = '', cq = '', stage = '', busy = false;
 let isWaiting = false, revealInterval = null;
 
@@ -75,16 +55,17 @@ function leaveGame(force = false) {
     clearInterval(revealInterval);
     revealInterval = null;
   }
-  try {
-    if (conn && conn.open) conn.close();
-    if (peer && !peer.destroyed) peer.destroy();
-  } catch (e) {}
-  for (const id in conns) {
-    try { conns[id].close(); } catch (e) {}
+  if (netClient) {
+    try {
+      if (isHost && code) {
+        netClient.publish('vg2/' + code + '/state', JSON.stringify({ t: 'closed' }), { retain: true });
+      } else if (!isHost && code) {
+        netClient.publish('vg2/' + code + '/action', JSON.stringify({ t: 'leave', pid }));
+      }
+      netClient.end(true);
+    } catch (e) {}
+    netClient = null;
   }
-  conns = {};
-  peer = null;
-  conn = null;
   H = null;
   S = null;
   isHost = false;
@@ -107,8 +88,8 @@ const BOT_NAMES = ['Lucía', 'Pablo', 'María', 'Carlos', 'Elena', 'Javi', 'Ana'
 let decks = { colegueo: [], fuerte: [] };
 
 function createGame() {
-  if (typeof Peer === 'undefined') {
-    err = 'No se pudo cargar la librería de conexión (¿sin internet o bloqueado?).';
+  if (typeof mqtt === 'undefined') {
+    err = 'Cargando conexión con el servidor… Espera un segundo y pulsa de nuevo.';
     return render();
   }
   isHost = true;
@@ -118,26 +99,48 @@ function createGame() {
   render();
   keepAwake();
 
-  try { peer && peer.destroy(); } catch (e) {}
+  if (netClient) {
+    try { netClient.end(true); } catch (e) {}
+    netClient = null;
+  }
 
   const c = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.random() * 24 | 0]).join('');
-  
+  code = c;
+
+  const currentBroker = BROKERS[brokerIdx % BROKERS.length];
+  const clientId = 'vgh_' + pid + '_' + Math.random().toString(36).slice(2, 7);
+
   let opened = false;
   const timeout = setTimeout(() => {
     if (!opened && !H) {
       busy = false;
       isHost = false;
-      err = 'El servidor tardó en responder. Revisa tu conexión e inténtalo de nuevo.';
-      try { peer && peer.destroy(); } catch (e) {}
+      brokerIdx++;
+      err = 'El servidor tardó en responder. Reintentando por ruta alternativa…';
+      try { netClient && netClient.end(true); } catch (e) {}
       render();
     }
-  }, 14000);
+  }, 10000);
 
-  peer = new Peer('hq-' + c, OPTS);
-  peer.on('open', () => {
+  try {
+    netClient = mqtt.connect(currentBroker, {
+      clientId,
+      clean: true,
+      connectTimeout: 8000,
+      reconnectPeriod: 2000,
+      keepalive: 30
+    });
+  } catch (e) {
+    clearTimeout(timeout);
+    busy = false;
+    isHost = false;
+    err = 'Error al conectar con la red: ' + (e.message || e);
+    return render();
+  }
+
+  netClient.on('connect', () => {
     opened = true;
     clearTimeout(timeout);
-    code = c;
     try { history.replaceState(null, '', '#' + c); } catch (e) { location.hash = c; }
     busy = false;
     H = {
@@ -156,89 +159,77 @@ function createGame() {
       waiting: []
     };
     me = 1;
+
+    // El host se suscribe a las acciones de los jugadores
+    netClient.subscribe('vg2/' + c + '/action', { qos: 0 });
+
     bc();
+
     if (revealInterval) clearInterval(revealInterval);
     revealInterval = setInterval(() => {
       if (H && H.phase === 'vote' && H.deadline && Date.now() >= H.deadline) reveal();
     }, 500);
   });
 
-  peer.on('disconnected', () => {
-    try { if (!peer.destroyed) peer.reconnect(); } catch (e) {}
-  });
+  netClient.on('message', (topic, payload) => {
+    if (!H) return;
+    try {
+      const m = JSON.parse(payload.toString());
+      if (topic === 'vg2/' + c + '/action') {
+        if (m.t === 'join' && m.pid) {
+          const cleanName = String(m.name || '?').trim().slice(0, 14);
+          if (!cleanName || cleanName === '?') {
+            netClient.publish('vg2/' + c + '/direct/' + m.pid, JSON.stringify({ t: 'err', msg: 'Introduce un nombre válido para jugar.' }));
+            return;
+          }
 
-  peer.on('error', e => {
-    clearTimeout(timeout);
-    if (e.type === 'unavailable-id') {
-      try { peer.destroy(); } catch (err) {}
-      createGame();
-    } else if (!H) {
-      busy = false;
-      isHost = false;
-      err = 'No se pudo crear la partida [' + e.type + ']. Revisa tu conexión.';
-      render();
+          // Validar que el nombre no esté repetido
+          const nameTaken = H.players.some(p => p.id !== m.pid && p.name.trim().toLowerCase() === cleanName.toLowerCase()) ||
+            ((H.waiting || []).some(w => w.id !== m.pid && w.name.trim().toLowerCase() === cleanName.toLowerCase()));
+
+          if (nameTaken) {
+            netClient.publish('vg2/' + c + '/direct/' + m.pid, JSON.stringify({ t: 'err', msg: `El nombre "${cleanName}" ya está en uso. Elige otro nombre.` }));
+            return;
+          }
+
+          let p = H.players.find(x => x.id === m.pid);
+          if (p) {
+            p.name = cleanName;
+            bc();
+            return;
+          }
+
+          if (H.phase === 'lobby') {
+            p = { id: m.pid, n: H.players.length + 1, name: cleanName, total: 0, wins: 0 };
+            H.players.push(p);
+            bc();
+          } else {
+            // Partida ya empezada: entra en espera para la siguiente ronda
+            if (!H.waiting) H.waiting = [];
+            let w = H.waiting.find(x => x.id === m.pid);
+            if (!w) {
+              H.waiting.push({ id: m.pid, name: cleanName });
+            } else {
+              w.name = cleanName;
+            }
+            bc();
+          }
+        } else if (m.t === 'vote' && H.phase === 'vote' && m.pid) {
+          castVote(m.pid, m.n);
+        } else if (m.t === 'leave' && m.pid) {
+          if (H && H.waiting) {
+            H.waiting = H.waiting.filter(w => w.id !== m.pid);
+            bcSoon();
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Host msg err', e);
     }
   });
 
-  peer.on('connection', c => {
-    c.on('error', e => console.warn('Conn err', e));
-    c.on('close', () => {
-      if (H && H.waiting && c._pid) {
-        H.waiting = H.waiting.filter(w => w.id !== c._pid);
-        bcSoon();
-      }
-    });
-    c.on('data', m => {
-      if (m.t === 'join' && m.pid) {
-        const cleanName = String(m.name || '?').trim().slice(0, 14);
-        if (!cleanName || cleanName === '?') {
-          c.send({ t: 'err', msg: 'Introduce un nombre válido para jugar.' });
-          setTimeout(() => { try { c.close(); } catch (e) {} }, 500);
-          return;
-        }
-
-        // Validar que el nombre no esté repetido
-        const nameTaken = H.players.some(p => p.id !== m.pid && p.name.trim().toLowerCase() === cleanName.toLowerCase()) ||
-          ((H.waiting || []).some(w => w.id !== m.pid && w.name.trim().toLowerCase() === cleanName.toLowerCase()));
-
-        if (nameTaken) {
-          c.send({ t: 'err', msg: `El nombre "${cleanName}" ya está en uso. Elige otro nombre para entrar.` });
-          setTimeout(() => { try { c.close(); } catch (e) {} }, 500);
-          return;
-        }
-
-        let p = H.players.find(x => x.id === m.pid);
-        if (p) {
-          p.name = cleanName;
-          conns[m.pid] = c;
-          c._pid = m.pid;
-          bc();
-          return;
-        }
-
-        if (H.phase === 'lobby') {
-          p = { id: m.pid, n: H.players.length + 1, name: cleanName, total: 0, wins: 0 };
-          H.players.push(p);
-          conns[m.pid] = c;
-          c._pid = m.pid;
-          bc();
-        } else {
-          // Partida ya empezada: entra en espera para la siguiente ronda
-          if (!H.waiting) H.waiting = [];
-          let w = H.waiting.find(x => x.id === m.pid);
-          if (!w) {
-            H.waiting.push({ id: m.pid, name: cleanName });
-          } else {
-            w.name = cleanName;
-          }
-          conns[m.pid] = c;
-          c._pid = m.pid;
-          bc();
-        }
-      } else if (m.t === 'vote' && H.phase === 'vote' && c._pid) {
-        castVote(c._pid, m.n);
-      }
-    });
+  netClient.on('error', e => {
+    console.warn('Host net error', e);
   });
 }
 
@@ -258,33 +249,33 @@ const pub = () => ({
   timed: !!H.deadline,
   left: H.deadline ? Math.max(0, H.deadline - Date.now()) : 0,
   voted: Object.keys(H.votes).length,
-  players: H.players.map(p => ({ n: p.n, name: p.name, total: p.total, wins: p.wins })),
+  players: H.players.map(p => ({ id: p.id, n: p.n, name: p.name, total: p.total, wins: p.wins })),
   waitingCount: (H.waiting || []).length,
-  waitingNames: (H.waiting || []).map(w => w.name)
+  waitingNames: (H.waiting || []).map(w => w.name),
+  waitingIds: (H.waiting || []).map(w => w.id)
 });
 
 function bc() {
   S = pub();
   S.endAt = H.deadline;
   S.tiebreakEnd = H.tiebreakAt || 0;
-  for (const id in conns) {
-    const c = conns[id];
-    if (c && c.open) {
-      const p = H.players.find(x => x.id === id);
-      const isWait = !p && !!(H.waiting && H.waiting.some(w => w.id === id));
-      const pn = p && p.n;
-      c.send({
-        t: 's',
-        s: S,
-        you: pn,
-        waiting: isWait,
-        voted: H.votes[id] != null ? H.votes[id] : null,
-        mine: (H.res && pn && H.res.voters[pn]) || [],
-        mineInit: (H.initialRes && pn && H.initialRes.voters[pn]) || [],
-        mineTb: (H.tbRes && pn && H.tbRes.voters[pn]) || []
-      });
-    }
+
+  if (netClient && isHost && code) {
+    const payload = JSON.stringify({
+      t: 's',
+      s: S,
+      deadline: H.deadline,
+      tiebreakAt: H.tiebreakAt || 0,
+      left: H.deadline ? Math.max(0, H.deadline - Date.now()) : 0,
+      tiebreakLeft: H.tiebreakAt ? Math.max(0, H.tiebreakAt - Date.now()) : 0,
+      votesMap: (H.phase === 'reveal' || H.phase === 'end') ? H.votes : null,
+      res: H.res,
+      initialRes: H.initialRes,
+      tbRes: H.tbRes
+    });
+    netClient.publish('vg2/' + code + '/state', payload, { retain: true, qos: 0 });
   }
+
   mineV = (H.res && me && H.res.voters[me]) || [];
   mineInitV = (H.initialRes && me && H.initialRes.voters[me]) || [];
   mineTbV = (H.tbRes && me && H.tbRes.voters[me]) || [];
@@ -458,111 +449,111 @@ function setStage(t) {
 }
 
 function joinGame(c, retry) {
-  if (typeof Peer === 'undefined') {
-    err = 'No se pudo cargar PeerJS (¿sin internet o bloqueado?).';
+  if (typeof mqtt === 'undefined') {
+    err = 'Cargando conexión con el servidor… Espera un segundo y pulsa de nuevo.';
     return render();
   }
   code = c;
   try { history.replaceState(null, '', '#' + c); } catch (e) { location.hash = c; }
   busy = true;
   err = '';
-  setStage('1/3 servidor');
+  setStage('1/2 conectando');
   render();
   keepAwake();
 
-  try { peer && peer.destroy(); } catch (e) {}
-  
-  let opened = false, done = false, to;
-  const fail = async () => {
+  if (netClient) {
+    try { netClient.end(true); } catch (e) {}
+    netClient = null;
+  }
+
+  let done = false;
+  const currentBroker = BROKERS[brokerIdx % BROKERS.length];
+  const clientId = 'vgp_' + pid + '_' + Math.random().toString(36).slice(2, 7);
+
+  const fail = () => {
     if (done) return;
     done = true;
-    if (S) { setTimeout(() => joinGame(c), 3000); return; }
-    if (!retry && !opened) { return joinGame(c, true); }
-    let reach = 'no';
-    try { await fetch('https://0.peerjs.com/', { mode: 'no-cors', cache: 'no-store' }); reach = 'sí'; } catch (e) {}
-    const st = conn && conn.peerConnection ? conn.peerConnection.iceConnectionState : '-';
-    err = opened
-      ? 'No se pudo conectar con el anfitrión [' + st + ']. Comprueba que el anfitrión tenga la sala creada y la pantalla encendida.'
-      : 'No llego al servidor de conexión [servidor accesible: ' + reach + ']. Revisa tu conexión a internet.';
+    if (S) { setTimeout(() => joinGame(c), 2000); return; }
+    brokerIdx++;
+    err = 'No se pudo conectar a la sala ' + code + '. Comprueba el código o que el anfitrión esté en la sala.';
     busy = false;
     render();
   };
 
-  to = setTimeout(fail, 20000);
-  peer = new Peer(OPTS);
-  peer.on('open', () => {
-    opened = true;
-    setStage('2/3 buscando partida');
-    conn = peer.connect('hq-' + code, { reliable: true });
-    
-    // Monitorear progreso de conexión ICE (útil en datos móviles y TURN)
-    try {
-      if (conn.peerConnection) {
-        conn.peerConnection.addEventListener('iceconnectionstatechange', () => {
-          const s = conn.peerConnection.iceConnectionState;
-          if (s === 'checking') setStage('2/3 negociando conexión…');
-          else if (s === 'connected' || s === 'completed') setStage('3/3 entrando…');
-        });
-      }
-    } catch (e) {}
+  const to = setTimeout(fail, 10000);
 
-    conn.on('open', () => {
-      setStage('3/3 entrando');
-      conn.send({ t: 'join', pid, name: myName });
+  try {
+    netClient = mqtt.connect(currentBroker, {
+      clientId,
+      clean: true,
+      connectTimeout: 7000,
+      reconnectPeriod: 2000,
+      keepalive: 30
     });
-    
-    conn.on('data', m => {
-      if (m.t === 's') {
-        clearTimeout(to);
-        done = true;
-        busy = false;
-        S = m.s;
-        if (S.timed) S.endAt = Date.now() + S.left;
-        if (S.tiebreakLeft) S.tiebreakEnd = Date.now() + S.tiebreakLeft;
-        me = m.you;
-        isWaiting = !!m.waiting;
-        myVote = m.voted;
-        mineV = m.mine || [];
-        mineInitV = m.mineInit || [];
-        mineTbV = m.mineTb || [];
-        render();
-      } else if (m.t === 'err') {
-        clearTimeout(to);
-        done = true;
-        busy = false;
-        err = m.msg || 'No se pudo entrar a la partida.';
-        try { conn.close(); } catch (e) {}
-        render();
-      }
-    });
+  } catch (e) {
+    clearTimeout(to);
+    err = 'Error de conexión: ' + (e.message || e);
+    busy = false;
+    return render();
+  }
 
-    conn.on('error', e => {
-      console.warn('Conn err', e);
-      fail();
-    });
-
-    conn.on('close', () => {
-      if (S && !done) return;
-      if (S) setTimeout(() => joinGame(code), 1500);
-    });
+  netClient.on('connect', () => {
+    setStage('2/2 entrando');
+    netClient.subscribe(['vg2/' + code + '/state', 'vg2/' + code + '/direct/' + pid], { qos: 0 });
+    netClient.publish('vg2/' + code + '/action', JSON.stringify({ t: 'join', pid, name: myName }));
   });
 
-  peer.on('disconnected', () => {
-    if (!peer.destroyed && !done) {
-      try { peer.reconnect(); } catch (e) {}
+  netClient.on('message', (topic, payload) => {
+    try {
+      const m = JSON.parse(payload.toString());
+      if (topic === 'vg2/' + code + '/state') {
+        if (m.t === 'closed') {
+          err = 'El anfitrión ha cerrado la partida.';
+          leaveGame(true);
+          return;
+        }
+        if (m.t === 's') {
+          clearTimeout(to);
+          done = true;
+          busy = false;
+          S = m.s;
+          if (S.timed) S.endAt = Date.now() + (m.left || S.left || 0);
+          if (S.tiebreakLeft) S.tiebreakEnd = Date.now() + (m.tiebreakLeft || S.tiebreakLeft || 0);
+
+          const myPlayer = (S.players || []).find(p => p.id === pid);
+          if (myPlayer) {
+            me = myPlayer.n;
+            isWaiting = false;
+          } else if ((S.waitingIds || []).includes(pid)) {
+            me = null;
+            isWaiting = true;
+          }
+
+          if (m.votesMap && m.votesMap[pid] != null) {
+            myVote = m.votesMap[pid];
+          }
+
+          mineV = (m.res && me && m.res.voters[me]) || [];
+          mineInitV = (m.initialRes && me && m.initialRes.voters[me]) || [];
+          mineTbV = (m.tbRes && me && m.tbRes.voters[me]) || [];
+          render();
+        }
+      } else if (topic === 'vg2/' + code + '/direct/' + pid) {
+        if (m.t === 'err') {
+          clearTimeout(to);
+          done = true;
+          busy = false;
+          err = m.msg || 'No se pudo entrar a la partida.';
+          render();
+        }
+      }
+    } catch (e) {
+      console.warn('Player msg err', e);
     }
   });
 
-  peer.on('error', e => {
-    if (done) return;
-    clearTimeout(to);
-    done = true;
-    if (S) { setTimeout(() => joinGame(c), 3000); return; }
-    err = e.type === 'peer-unavailable'
-      ? 'No existe la partida ' + code + '. Comprueba el código o que el anfitrión esté en la sala.'
-      : 'Problema de conexión [' + e.type + '].';
-    busy = false;
-    render();
+  netClient.on('error', e => {
+    console.warn('Player net error', e);
   });
 }
 
@@ -575,8 +566,8 @@ function vote(n) {
   }
   if (isHost) {
     castVote(pid, n);
-  } else if (conn && conn.open) {
-    conn.send({ t: 'vote', n });
+  } else if (netClient) {
+    netClient.publish('vg2/' + code + '/action', JSON.stringify({ t: 'vote', pid, n }));
     myVote = n;
     render();
   }
@@ -968,6 +959,10 @@ app.addEventListener('click', e => {
   if (a === 'cancel-join') {
     busy = false;
     err = '';
+    if (netClient) {
+      try { netClient.end(true); } catch(e) {}
+      netClient = null;
+    }
     render();
     return;
   }
@@ -1013,29 +1008,20 @@ app.addEventListener('click', e => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   keepAwake();
-  if (isHost) {
-    if (peer && peer.disconnected && !peer.destroyed) try { peer.reconnect(); } catch (e) {}
-  } else if (S && (!conn || !conn.open)) {
-    joinGame(code);
+  if (netClient && (!netClient.connected || netClient.disconnected)) {
+    try { netClient.reconnect(); } catch (e) {}
   }
 });
 
 // Reconectar si el móvil recupera cobertura o cambia entre WiFi y Datos
 window.addEventListener('online', () => {
   keepAwake();
-  if (isHost) {
-    if (peer && peer.disconnected && !peer.destroyed) try { peer.reconnect(); } catch (e) {}
-  } else if (S && (!conn || !conn.open)) {
+  if (netClient && (!netClient.connected || netClient.disconnected)) {
+    try { netClient.reconnect(); } catch (e) {}
+  } else if (code && !isHost && !S) {
     joinGame(code);
   }
 });
-
-// Heartbeat preventivo para mantener vivo el registro en el servidor de señalización
-setInterval(() => {
-  if (isHost && peer && peer.disconnected && !peer.destroyed) {
-    try { peer.reconnect(); } catch (e) {}
-  }
-}, 5000);
 
 app.addEventListener('input', e => {
   if (e.target.id === 'cq') cq = e.target.value;
