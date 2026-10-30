@@ -10,9 +10,10 @@ Cada jugador se conecta desde su propio móvil mediante un código de sala o esc
 
 - **🌐 Multijugador Universal en Tiempo Real**: Conexión instantánea a través de **WebSockets seguros (WSS con TLS)** sobre el puerto 443 estándar, 100% compatible con cualquier teléfono móvil (iPhone, Android, Xiaomi, etc.) y cualquier tipo de red (WiFi, Datos móviles 4G/5G, CGNAT o modo incógnito).
 - **📱 Entrada rápida por QR o Código**: Entra en 2 segundos escaneando el código QR generado en la pantalla del anfitrión o escribiendo el código de 4 letras.
-- **🎭 Dos Modos de Juego**:
+- **🎭 Tres Modos de Juego**:
   - 😄 **Colegueo**: Preguntas desenfadadas, anécdotas y humor entre amigos.
-  - 🌶️ **Fuerte**: Preguntas comprometidas, picantes y verdades sin filtro.
+  - 🌶️ **Fuerte**: Preguntas comprometidas, salseo, infidelidades y verdades sin filtro.
+  - 🔥 **Retos**: Retos atrevidos, descarados y de alto voltaje sexual donde el grupo vota quién debe cumplirlo en vivo.
 - **✍️ Preguntas Personalizadas**: El anfitrión puede escribir preguntas propias en cualquier momento de la partida.
 - **⚔️ Sistema de Desempate Automático**: Si dos o más jugadores empatan en votos, se activa una ronda relámpago exclusiva para desempatar entre los afectados.
 - **⏱️ Temporizador y Reglas Configurables**:
@@ -70,7 +71,11 @@ const Q = {
   ],
   fuerte: [
     "¿Quién es más probable que...",
-    "¿A quién ves haciendo..."
+    "¿Quién volvería con su peor ex..."
+  ],
+  retos: [
+    "Besa en el cuello a la persona a tu derecha...",
+    "Quítate dos prendas de ropa o..."
   ]
 };
 ```

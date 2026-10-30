@@ -85,7 +85,7 @@ function leaveGame(force = false) {
 // ---------- Anfitrión ----------
 const TIMES = [0, 10, 15, 20, 30, 45, 60, 90];
 const BOT_NAMES = ['Lucía', 'Pablo', 'María', 'Carlos', 'Elena', 'Javi', 'Ana', 'Marcos', 'Sara', 'Hugo', 'Laura', 'Álex', 'Sofía', 'Dani', 'Carmen', 'Adrián', 'Paula', 'Diego', 'Marta', 'Raúl'];
-let decks = { colegueo: [], fuerte: [] };
+let decks = { colegueo: [], fuerte: [], retos: [] };
 
 function createGame() {
   if (typeof mqtt === 'undefined') {
@@ -612,13 +612,13 @@ function burst(list = ['🎉', '✨', '👑', '🔥', '⚡', '🌟']) {
   }
 })();
 
-const MODE = m => m === 'fuerte' ? '🌶️ Fuerte' : '😄 Colegueo';
+const MODE = m => m === 'fuerte' ? '🌶️ Fuerte' : m === 'retos' ? '🔥 Retos' : '😄 Colegueo';
 
 function cfgPanel(modeOnly) {
   const c = S.cfg;
   const seg = m => `<button class="${c.mode === m ? 'on' : ''}" data-a="mode" data-m="${m}">${MODE(m)}</button>`;
   const stp = (l, k, v) => `<div class="stp"><span>${l}</span><button data-a="${k}" data-d="-1">−</button><b>${v}</b><button data-a="${k}" data-d="1">+</button></div>`;
-  return `<div class="cfg"><div class="seg">${seg('colegueo')}${seg('fuerte')}</div>${modeOnly ? '' : stp('Rondas para ganar', 'tg', c.target) + stp('Tiempo por pregunta', 'sc', c.secs ? c.secs + ' s' : 'sin límite')}</div>`;
+  return `<div class="cfg"><div class="seg">${seg('colegueo')}${seg('fuerte')}${seg('retos')}</div>${modeOnly ? '' : stp(c.mode === 'retos' ? 'Retos para ganar' : 'Rondas para ganar', 'tg', c.target) + stp(c.mode === 'retos' ? 'Tiempo por reto' : 'Tiempo por pregunta', 'sc', c.secs ? c.secs + ' s' : 'sin límite')}</div>`;
 }
 
 let lastBurst = '';
@@ -779,6 +779,9 @@ function render() {
       `;
     } else {
       if (tb) h += `<div class="win sm"><div class="big">⚔️ Desempate</div>Solo se puede votar a los empatados</div>`;
+      if (cf.mode === 'retos') {
+        h += `<div style="text-align:center;font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--pri);margin-bottom:6px;text-transform:uppercase;">🔥 RETO PARA EL MÁS VOTADO 🔥</div>`;
+      }
       h += `<div class="q" style="font-size:${S.q.length > 100 ? 17 : S.q.length > 70 ? 21 : 26}px">${esc(S.q)}</div>`;
       if (S.timed) {
         h += `<div class="tbar"><i id="tb" style="width:${S.cfg.secs ? Math.max(0, ((S.endAt || 0) - Date.now()) / (S.cfg.secs * 1000) * 100) : 0}%"></i></div><div id="tm" class="mute">⏱ ${Math.ceil(Math.max(0, (S.endAt || 0) - Date.now()) / 1000)} s</div>`;
@@ -789,7 +792,7 @@ function render() {
           ${votables.map(p => `<button class="opt ${myVote === p.n ? 'on' : ''}" data-a="vote" data-n="${p.n}" ${p.n === me || iAmTied ? 'disabled' : ''}><span class="n">${p.n}</span><span>${esc(p.name)}${p.n === me ? ' (tú)' : ''}</span></button>`).join('')}
         </div>
         <p class="mute" style="text-align:center;margin-top:14px;">
-          ${iAmTied ? 'Estás en el desempate. No puedes votarte en esta ronda.' : myVote ? '✓ Voto enviado. Puedes cambiarlo hasta que se revele.' : tb ? 'Vota para deshacer el empate.' : 'Toca el número de la persona que elijas (a ti no puedes votarte).'}<br>
+          ${iAmTied ? 'Estás en el desempate. No puedes votarte en esta ronda.' : myVote ? '✓ Voto enviado. Puedes cambiarlo hasta que se revele.' : tb ? (cf.mode === 'retos' ? 'Vota para desempatar a quién le cae el reto.' : 'Vota para deshacer el empate.') : (cf.mode === 'retos' ? 'Vota a quién le toca cumplir este reto (a ti no puedes votarte).' : 'Toca el número de la persona que elijas (a ti no puedes votarte).')}<br>
           <span id="vc">${S.voted} de ${tb ? total - tb.length : total} han votado</span>
         </p>
       `;
@@ -797,7 +800,7 @@ function render() {
         if (S.waitingCount > 0) {
           h += `<p class="mute" style="text-align:center;font-size:13px;color:var(--pri);margin-bottom:10px;">⏳ ${S.waitingCount} nuevo(s) jugador(es) esperando entrar en la siguiente ronda: <b>${esc(S.waitingNames.join(', '))}</b></p>`;
         }
-        h += `<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button class="sec" data-a="skip">Saltar pregunta (no cuenta)</button>`;
+        h += `<button class="pri" data-a="reveal">Finalizar y ver resultados</button><button class="sec" data-a="skip">${cf.mode === 'retos' ? 'Saltar reto (no cuenta)' : 'Saltar pregunta (no cuenta)'}</button>`;
       }
     }
   } else if (S.phase === 'result') {
@@ -808,7 +811,13 @@ function render() {
     h += `<div class="dots">${[0, 1].map(i => `<i class="${i === step ? 'on' : ''}"></i>`).join('')}</div>`;
     
     if (step === 0) {
+      if (cf.mode === 'retos') {
+        h += `<div style="text-align:center;font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--pri);margin-bottom:4px;text-transform:uppercase;">🔥 RETO DE LA RONDA</div>`;
+      }
       h += `<div class="mute" style="margin-bottom:12px;">${esc(S.q)}</div>`;
+      if (cf.mode === 'retos' && r.winners.includes(me)) {
+        h += `<div class="win sm" style="background:rgba(236,72,153,0.22);border:2px solid var(--pri);margin-bottom:14px;"><div class="big">🚨 ¡TE TOCA CUMPLIR EL RETO! 🚨</div>¡Has sido el más votado! Si te rajas: castigo o doble chupito 😈</div>`;
+      }
       if (hasTb) {
         const anyVote = mineInitV.length > 0 || mineTbV.length > 0;
         if (anyVote) {
@@ -831,11 +840,11 @@ function render() {
       h += `<h2>Resumen de la ronda</h2>`;
       if (hasTb) {
         h += r.winners.length
-          ? `<div class="win sm"><div class="big">${r.winners.map(n => n + ' · ' + nm(n)).join('<br>')}</div>Gana la ronda tras el desempate con ${r.max} ${r.max > 1 ? 'votos' : 'voto'}</div>`
+          ? `<div class="win sm"><div class="big">${r.winners.map(n => n + ' · ' + nm(n)).join('<br>')}</div>${cf.mode === 'retos' ? '¡Le toca cumplir el reto tras el desempate!' : 'Gana la ronda tras el desempate con ' + r.max + (r.max > 1 ? ' votos' : ' voto')}</div>`
           : `<div class="win sm"><div class="big">Empate en el desempate</div>Nadie gana esta ronda</div>`;
         h += `<p class="mute" style="margin:4px 0 8px;font-size:14px">Votación general:</p>`;
       } else {
-        h += r.max ? (r.winners.length ? `<div class="win sm"><div class="big">${r.winners.map(n => n + ' · ' + nm(n)).join('<br>')}</div>Gana la ronda con ${r.max} ${r.max > 1 ? 'votos' : 'voto'}</div>` : `<div class="win sm"><div class="big">Empate total</div>Nadie gana esta ronda</div>`) : `<div class="win sm"><div class="big">Nadie votó</div></div>`;
+        h += r.max ? (r.winners.length ? `<div class="win sm"><div class="big">${r.winners.map(n => n + ' · ' + nm(n)).join('<br>')}</div>${cf.mode === 'retos' ? '¡Le toca cumplir el reto con ' + r.max + (r.max > 1 ? ' votos' : ' voto') + '! 🔥' : 'Gana la ronda con ' + r.max + (r.max > 1 ? ' votos' : ' voto')}</div>` : `<div class="win sm"><div class="big">Empate total</div>${cf.mode === 'retos' ? '¡Empate! Se decide en desempate quién cumple el reto' : 'Nadie gana esta ronda'}</div>`) : `<div class="win sm"><div class="big">Nadie votó</div></div>`;
       }
       h += sorted.map(p => `
         <div class="bar">
@@ -851,7 +860,7 @@ function render() {
       const top = Math.max(0, ...ps.map(p => p.wins)), lsW = ps.filter(p => top > 0 && p.wins === top);
       h += `<h2>Clasificación general</h2>`;
       h += top
-        ? `<div class="mine">👑 Va ganando <b>${lsW.map(p => esc(p.name)).join(' y ')}</b> con ${top} ${top > 1 ? 'rondas ganadas' : 'ronda ganada'}</div>`
+        ? `<div class="mine">👑 Va ganando <b>${lsW.map(p => esc(p.name)).join(' y ')}</b> con ${top} ${cf.mode === 'retos' ? (top > 1 ? 'retos acumulados' : 'reto acumulado') : (top > 1 ? 'rondas ganadas' : 'ronda ganada')}</div>`
         : `<div class="mine">Todavía nadie ha ganado una ronda</div>`;
       h += ps.filter(p => p.wins > 0).sort((a, b) => b.wins - a.wins || b.total - a.total).map(p => `
         <div class="rank">
@@ -883,8 +892,8 @@ function render() {
             h += `<div class="mine" style="border:1.5px solid var(--pri);background:rgba(255,100,50,0.1);margin:12px 0;text-align:center;">👋 <b>${S.waitingCount}</b> jugador(es) en espera: <b>${esc(S.waitingNames.join(', '))}</b> (se incorporarán al pulsar siguiente)</div>`;
           }
           h += `
-            <input id="cq" placeholder="Escribe tu propia pregunta (opcional)" value="${esc(cq)}">
-            <button class="pri" data-a="next">Siguiente pregunta para todos</button>
+            <input id="cq" placeholder="${cf.mode === 'retos' ? 'Escribe tu propio reto (opcional)' : 'Escribe tu propia pregunta (opcional)'}" value="${esc(cq)}">
+            <button class="pri" data-a="next">${cf.mode === 'retos' ? 'Siguiente reto para todos' : 'Siguiente pregunta para todos'}</button>
             <button class="sec btn-danger" data-a="end">Terminar partida ahora</button>
           `;
         }

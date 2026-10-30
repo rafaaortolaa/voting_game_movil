@@ -1,9 +1,9 @@
-# 🔥 Banco Completo de Preguntas: 605 Preguntas (Versión Corta y Directa)
+# 🔥 Banco Completo del Juego: 755 Cartas
 
-- **😄 Modo Colegueo**: 300 preguntas
-- **🌶️ Modo Fuerte**: 305 preguntas
-- **⚡ Formato corto**: Preguntas directas al grano, sin rodeos ni fórmulas largas, ideales para leer en 2 segundos en el móvil en mitad de la fiesta.
-- **📱 Formulación adaptada**: 100% preparadas para votar en secreto por un jugador.
+- **😄 Modo Colegueo**: 300 preguntas (humor, anécdotas y piques entre amigos)
+- **🌶️ Modo Fuerte**: 305 preguntas (verdades sin filtro, infidelidades y salseo)
+- **🔥 Modo Retos**: 150 retos (pruebas atrevidas, fuertes y de alto voltaje sexual)
+- **⚡ Formato corto y directo**: Diseñado para leerse en segundos desde el móvil en mitad de la fiesta.
 
 ---
 
@@ -619,3 +619,158 @@
 303. ¿Quién se abriría cuenta en OnlyFans si le aseguran 3.000€ al mes?
 304. ¿Quién aceptaría un beso de tornillo con el más votado de la mesa?
 305. ¿Quién confiesa ahora mismo cuál es su mayor zona erógena?
+
+---
+
+## 3. 🔥 MODO RETOS (150 Retos Fuertes y Sexuales)
+
+1. Besa en el cuello a la persona a tu derecha durante 5 segundos.
+2. Quítate dos prendas de ropa o bébete dos chupitos seguidos.
+3. Hazle un baile sensual en el regazo a quien tú elijas durante 15 segundos.
+4. Dale un beso de 3 segundos en los labios a quien elija la mayoría de la mesa.
+5. Deja que la persona frente a ti te pase un cubito de hielo por el cuello y el pecho.
+6. Manda un audio gimiendo suave al último chat de WhatsApp que tengas abierto.
+7. Siéntate en el regazo de la persona que elijas hasta que termine la siguiente ronda.
+8. Deja que alguien de la sala te dé un mordisco suave donde elija.
+9. Enseña la foto más subida de tono o comprometida que tengas en tu galería oculta.
+10. Quítate la camiseta o la parte superior y juega la siguiente ronda así.
+11. Bebe un trago de alcohol directamente del cuello o pecho de otro jugador.
+12. Dale un masaje provocativo en los hombros a alguien susurrándole al oído.
+13. Confiesa en voz alta con quién de esta habitación tendrías una noche de sexo salvaje.
+14. Deja que la persona a tu izquierda te desabroche una prenda usando solo los dientes.
+15. Dale una nalgada sonora a la persona de la mesa que tú elijas.
+16. Ponte boca abajo en el suelo y deja que alguien se siente encima mientras haces 5 flexiones.
+17. Describe con todo lujo de detalles tu mayor fantasía sexual inconfesable.
+18. Besa apasionadamente en la mejilla a menos de un milímetro de los labios de tu crush de la sala.
+19. Gime como si estuvieras en el clímax durante 5 segundos seguidos sin reírte.
+20. Deja que te muerdan el labio inferior durante 3 segundos.
+21. Intercambia una prenda de ropa con la persona del sexo opuesto que tengas más cerca.
+22. Lame un poco de sal, nata o bebida del cuello de quien tengas enfrente.
+23. Lee en voz alta los últimos tres mensajes subidos de tono que hayas enviado por privado.
+24. Permite que alguien del grupo te revise las fotos eliminadas recientemente del móvil.
+25. Quítate los pantalones o la falda y quédate en ropa interior lo que queda de ronda.
+26. Besa la oreja de la persona a tu izquierda y susúrrale lo que le harías en la cama.
+27. Haz una demostración de tu mejor movimiento de caderas en la cama sobre un cojín.
+28. Deja que la persona más votada te toque por debajo de la camiseta durante 5 segundos.
+29. Manda un emoji de fuego y un diablillo morado a tu ex o a tu 'casi algo'.
+30. Pasa una carta o hielo de boca en boca con la persona que tengas a tu lado sin que se caiga.
+31. Bebe un chupito sin usar las manos, directamente del vaso sostenido por otro.
+32. Confiesa cuál ha sido el lugar más raro o indecente donde has tenido sexo.
+33. Quítate los calcetines y deja que alguien te haga cosquillas en los pies durante 10 segundos.
+34. Hazle un striptease de 20 segundos a la persona más atractiva de la mesa.
+35. Susúrrale al oído a cada persona de la habitación qué nota le das en la cama.
+36. Besa a dos personas de la sala en la mejilla al mismo tiempo.
+37. Pasa tus dedos por los labios de la persona frente a ti mirándole fijamente a los ojos.
+38. Quítate el sujetador o la camiseta por debajo de la ropa sin desnudarte del todo.
+39. Imita los sonidos que haces en la cama durante 10 segundos delante de todos.
+40. Deja que la persona a tu derecha te dé de beber su copa con su propia boca.
+41. Confiésale a la persona que elija el grupo qué postura sexual harías con ella.
+42. Permite que alguien te dé una palmada en el culo mientras dices 'gracias'.
+43. Muestra tu historial de búsqueda de Google sin borrar nada.
+44. Ponte de rodillas delante de alguien y pídele perdón con voz muy sensual.
+45. Quítate una prenda de ropa elegida por votación del resto de jugadores.
+46. Deja que te aten las manos a la espalda durante las próximas dos rondas.
+47. Haz un baile provocativo contra la pared mirándole a los ojos a quien tú elijas.
+48. Bebe un trago de la copa de la persona que consideres que mejor besa de aquí.
+49. Besa a la persona a tu izquierda durante 5 segundos con los ojos vendados.
+50. Confiesa si alguna vez has tenido un sueño erótico con alguien presente y di con quién.
+51. Deja que te dibujen algo picante en el abdomen o espalda con un boli.
+52. Simula un orgasmo fingido exagerado como si estuvieras en una película.
+53. Abraza muy fuerte por detrás a quien tú elijas y quédate pegado 15 segundos.
+54. Muestra tu última conversación de Tinder, Bumble o mensajes directos de Instagram.
+55. Dale un beso en la comisura de los labios a la persona más tímida de la sala.
+56. Ponte la ropa del revés (delante hacia atrás) durante el resto de la partida.
+57. Tómate un chupito servido en el ombligo de otro jugador.
+58. Pasa tu nariz por el cuello de tres jugadores y di quién huele más sexy.
+59. Deja que alguien te desabroche el botón del pantalón durante una ronda entera.
+60. Di qué fetiche sexual tienes que nunca te has atrevido a pedir en la cama.
+61. Permite que dos personas te acaricien los brazos y cuello con los ojos cerrados.
+62. Haz 10 sentadillas mirando fijamente a los ojos de la persona frente a ti.
+63. Besa el dorso de la mano y luego el cuello de la persona que tú elijas.
+64. Confiesa la mentira más sucia que hayas dicho para acostarte con alguien.
+65. Deja que la persona a tu derecha te sople suavemente en el cuello durante 5 segundos.
+66. Manda una foto tuya tirado en la cama con cara sugerente a tus 'mejores amigos'.
+67. Ponte a gatas en el suelo durante 10 segundos mientras los demás te miran.
+68. Elige a alguien de la sala y deja que te dé de comer algo usando solo los labios.
+69. Quítate los zapatos y las medias/calcetines y juega descalzo lo que queda de partida.
+70. Confiesa con cuántas personas te has acostado en tu noche más salvaje.
+71. Besa la clavícula de la persona que tengas a tu izquierda.
+72. Muerde suavemente la oreja de la persona más alta de la habitación.
+73. Simula una llamada erótica caliente improvisada con la persona que elija el grupo.
+74. Deja que alguien te meta la mano en el bolsillo del pantalón durante 10 segundos.
+75. Di en voz alta la parte del cuerpo que más te excita de la persona frente a ti.
+76. Tómate un chupito doble sin hacer muecas o quítate otra prenda de ropa.
+77. Permite que alguien te desabroche un botón de la camisa o blusa.
+78. Pasa tu lengua por la mejilla de la persona a tu derecha.
+79. Confiesa si alguna vez te han pillado masturbándote o en pleno acto y quién fue.
+80. Siéntate en el suelo entre las piernas de alguien y apoya tu cabeza en sus muslos.
+81. Deja que te revisen la lista de personas bloqueadas en WhatsApp e Instagram.
+82. Besa apasionadamente en la frente, nariz y labios a la persona que elijas.
+83. Quítate el cinturón y deja que otro jugador lo guarde hasta el final.
+84. Gime el nombre de la persona que tengas a tu derecha mirándole a los ojos.
+85. Lame un cubito de hielo y pásaselo por los labios a otro jugador.
+86. Confiesa cuál es tu vídeo o fantasía erótica favorita que ves a solas.
+87. Deja que alguien te dé un trago en la boca mientras tienes la cabeza hacia atrás.
+88. Haz un movimiento de cadera provocativo sobre la mesa de la fiesta.
+89. Dile a la persona que tienes a tu izquierda lo que más te gusta de su cuerpo.
+90. Ponte en ropa interior y tírate al suelo a hacer la cucharita con quien elija el grupo.
+91. Besa el hombro descubierto de la persona más cercana a ti.
+92. Deja que la persona más votada te huela el cuello y te susurre algo sucio.
+93. Muestra a la mesa la última foto que tomaste con la cámara de tu móvil.
+94. Haz que alguien te dé de beber con una pajita mientras le miras sin parpadear.
+95. Confiesa si has tenido fantasías con la pareja o ex de alguien de esta mesa.
+96. Quítate una prenda usando únicamente una sola mano sin ayuda.
+97. Dale un beso a la persona a tu derecha y un abrazo muy apretado a la de tu izquierda.
+98. Deja que alguien del grupo te levante la camiseta durante 5 segundos.
+99. Dile al oído a la persona más atractiva de la sala qué ropa interior llevas puesta.
+100. Tómate un chupito con los brazos entrelazados con la persona frente a ti.
+101. Muerde suavemente el dedo de la persona que elija el grupo.
+102. Haz una postura de yoga erótica en pareja con quien elija la mayoría.
+103. Deja que alguien te acaricie la pierna por debajo de la mesa durante 15 segundos.
+104. Confiesa si te has grabado alguna vez en vídeo íntimo y si aún lo conservas.
+105. Besa el cuello de dos personas distintas de la sala en menos de 10 segundos.
+106. Ponte de espaldas y deja que alguien te desabroche la parte superior.
+107. Lee en voz alta tu última búsqueda en una web para adultos.
+108. Haz un baile sexy de espaldas rozando a quien esté sentado detrás de ti.
+109. Deja que alguien te ponga nata o bebida en los labios y te la quite con un beso.
+110. Confiesa cuál ha sido tu peor experiencia en la cama y por qué.
+111. Dale un masaje en los muslos a la persona a tu izquierda durante 15 segundos.
+112. Manda un audio diciendo 'estoy pensando en ti desnudo' a quien elija el grupo.
+113. Quítate los pantalones y quédate en bóxer/bragas durante las próximas dos rondas.
+114. Besa en los labios a la persona a tu izquierda a través de una servilleta de papel.
+115. Deja que alguien te pase los labios por el cuello sin llegar a besarte.
+116. Confiesa qué juguete íntimo tienes o te gustaría probar en pareja.
+117. Sujeta a alguien por la cintura y pégate a él/ella durante 15 segundos.
+118. Deja que revisen tus conversaciones archivadas de WhatsApp delante de todos.
+119. Besa el estómago de la persona que tengas enfrente.
+120. Haz un sonido de placer muy sonoro cada vez que alguien hable en la siguiente ronda.
+121. Quítate una prenda y lánzasela a la persona que te parezca más caliente de aquí.
+122. Permite que te vendan los ojos y adivina quién te da un beso suave.
+123. Muestra a todos el color y modelo de tu ropa interior.
+124. Siéntate en el regazo de quien esté a tu izquierda y dale un sorbo a su copa.
+125. Confiesa la proposición más indecente o turbia que te hayan hecho en persona.
+126. Haz contacto visual con alguien de la sala durante 20 segundos sin sonreír ni parpadear.
+127. Deja que alguien te desabroche dos botones de la camisa y sople dentro.
+128. Ponte a cuatro patas y deja que alguien te monte como si fueras un caballo.
+129. Dale un beso de despedida de película a la persona que elija el grupo.
+130. Muerde suavemente el cuello de la persona que más te llame la atención de la sala.
+131. Confiesa si alguna vez has pensado en acostarte con alguien de esta misma mesa.
+132. Quítate dos prendas elegidas por la persona que tengas a tu derecha.
+133. Deja que te echen unas gotas de bebida fría en el pecho y las sequen con un pañuelo.
+134. Haz como si fueras a besar a alguien en la boca y detente a un centímetro riéndote.
+135. Tómate un chupito mientras alguien te acaricia la nuca suavemente.
+136. Baila pegado cuerpo a cuerpo con quien tú elijas durante 20 segundos sin música.
+137. Confiesa qué fetiche no perdonarías jamás en la cama a una pareja.
+138. Deja que alguien te pase un hielo por la espalda por dentro de la ropa.
+139. Besa suavemente la barbilla y la comisura de los labios de quien tengas enfrente.
+140. Quítate la camiseta y ponte la de otra persona de la sala.
+141. Manda una foto de tus piernas en la cama a quien elija la mayoría de la mesa.
+142. Confiesa cuál es la práctica en la cama que más te vuelve completamente loco.
+143. Deja que alguien te dé una nalgada y puntúa la fuerza del 1 al 10 en voz alta.
+144. Dale un beso en la comisura de los labios a dos personas seguidas.
+145. Permite que la persona a tu izquierda te dé de beber con su propia mano.
+146. Susurra al micrófono del móvil una frase caliente y envíasela a tu crush.
+147. Haz una ronda entera en ropa interior o bébete dos vasos de golpe sin respirar.
+148. Pasa tus labios por la clavícula de quien tengas a tu derecha despacio.
+149. Confiesa la experiencia sexual más salvaje que jamás le contarías a tus padres.
+150. Besa en los labios a quien tú elijas durante 5 segundos completos con pasión.

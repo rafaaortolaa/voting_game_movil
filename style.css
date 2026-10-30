@@ -28,6 +28,13 @@ body[data-mode="fuerte"] {
   --line: #451a2d;
 }
 
+body[data-mode="retos"] {
+  --pri: #ec4899;
+  --pri-glow: rgba(236, 72, 153, 0.5);
+  --pri-gradient: linear-gradient(135deg, #ec4899 0%, #d946ef 50%, #f43f5e 100%);
+  --line: #4a1838;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -461,14 +468,17 @@ button.sec {
 
 .seg {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 8px;
 }
 
 .seg button {
+  flex: 1;
+  min-width: 0;
   margin: 0;
-  padding: 10px 8px;
-  font-size: 15px;
+  padding: 10px 4px;
+  font-size: 13.5px;
+  white-space: nowrap;
 }
 
 .seg .on {
