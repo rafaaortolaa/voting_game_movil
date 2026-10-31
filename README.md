@@ -15,7 +15,7 @@ Cada jugador se conecta desde su propio móvil mediante un código de sala o esc
   - 🌶️ **Fuerte**: Preguntas comprometidas, salseo, infidelidades y verdades sin filtro (con votaciones).
   - 🎉 **Retos Colegas**: Retos divertidos, pruebas de fiesta y risas pensadas para hacer entre colegas chicos y chicas (sin ser tan fuertes ni sexuales). El sistema elige a alguien al azar en cada ronda para cumplirlo.
   - 🔥 **Retos Fuertes**: Retos atrevidos, descarados, besos, prendas y alto voltaje (+18). Al que le toca al azar le toca cumplirlo ante el grupo.
-- **🎲 Mecánica de Retos sin Votación**: En los modos de Retos no se vota; el juego selecciona a una persona al azar en cada ronda. El anfitrión registra si el elegido ha cumplido la prueba (+1 punto) o se ha rajado (castigo/chupito), pudiendo cambiar de persona al azar si es necesario.
+- **🎲 Mecánica de Retos sin Votación y sin Puntuación**: En los modos de Retos no hay votos ni tablas de puntuación: es un modo libre y continuo pensado para disfrutar y reírse en grupo. El sistema selecciona a una persona al azar en cada tarjeta. Si el reto es interpersonal (de hacer algo a otra persona, pareja o interacción entre chicos y chicas), el juego elige automáticamente también con qué persona debe hacerlo y adapta el texto con su nombre. El anfitrión puede pasar al siguiente reto con un solo toque, cambiar de persona elegida o de acompañante.
 - **✍️ Preguntas Personalizadas**: El anfitrión puede escribir preguntas propias en cualquier momento de la partida.
 - **⚔️ Sistema de Desempate Automático**: Si dos o más jugadores empatan en votos, se activa una ronda relámpago exclusiva para desempatar entre los afectados.
 - **⏱️ Temporizador y Reglas Configurables**:

@@ -679,6 +679,13 @@ button.sec {
   animation: dare-pulse-anim 2s infinite ease-in-out;
 }
 
+.dare-banner.is-partner {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(6, 182, 212, 0.18) 0%, rgba(24, 20, 40, 0.95) 100%);
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+  animation: dare-pulse-partner-anim 2s infinite ease-in-out;
+}
+
 .dare-pulse {
   font-family: 'Bungee', Impact, sans-serif;
   font-size: 26px;
@@ -720,25 +727,12 @@ button.sec {
   box-shadow: 0 0 10px var(--pri-glow);
 }
 
-.btn-dare-ok {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-  border-color: #10b981 !important;
+.chip.chip-partner {
+  border-color: var(--accent) !important;
+  background: rgba(6, 182, 212, 0.25) !important;
   color: #ffffff !important;
-  font-size: 17px !important;
-  font-weight: 800 !important;
-  padding: 15px !important;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35) !important;
-}
-
-.btn-dare-fail {
-  border-color: rgba(239, 68, 68, 0.5) !important;
-  color: #fca5a5 !important;
-  background: rgba(239, 68, 68, 0.12) !important;
-  font-weight: 800 !important;
-}
-
-.btn-dare-fail:hover {
-  background: rgba(239, 68, 68, 0.22) !important;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
 }
 
 @keyframes dare-pulse-anim {
@@ -749,6 +743,17 @@ button.sec {
   50% {
     transform: scale(1.02);
     box-shadow: 0 0 35px var(--pri-glow);
+  }
+}
+
+@keyframes dare-pulse-partner-anim {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 35px rgba(6, 182, 212, 0.55);
   }
 }
 
