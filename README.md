@@ -10,10 +10,12 @@ Cada jugador se conecta desde su propio móvil mediante un código de sala o esc
 
 - **🌐 Multijugador Universal en Tiempo Real**: Conexión instantánea a través de **WebSockets seguros (WSS con TLS)** sobre el puerto 443 estándar, 100% compatible con cualquier teléfono móvil (iPhone, Android, Xiaomi, etc.) y cualquier tipo de red (WiFi, Datos móviles 4G/5G, CGNAT o modo incógnito).
 - **📱 Entrada rápida por QR o Código**: Entra en 2 segundos escaneando el código QR generado en la pantalla del anfitrión o escribiendo el código de 4 letras.
-- **🎭 Tres Modos de Juego**:
-  - 😄 **Colegueo**: Preguntas desenfadadas, anécdotas y humor entre amigos.
-  - 🌶️ **Fuerte**: Preguntas comprometidas, salseo, infidelidades y verdades sin filtro.
-  - 🔥 **Retos**: Retos atrevidos, descarados y de alto voltaje sexual donde el grupo vota quién debe cumplirlo en vivo.
+- **🎭 Cuatro Modos de Juego**:
+  - 😄 **Colegueo**: Preguntas desenfadadas, anécdotas y humor entre amigos (con votaciones).
+  - 🌶️ **Fuerte**: Preguntas comprometidas, salseo, infidelidades y verdades sin filtro (con votaciones).
+  - 🎉 **Retos Colegas**: Retos divertidos, pruebas de fiesta y risas pensadas para hacer entre colegas chicos y chicas (sin ser tan fuertes ni sexuales). El sistema elige a alguien al azar en cada ronda para cumplirlo.
+  - 🔥 **Retos Fuertes**: Retos atrevidos, descarados, besos, prendas y alto voltaje (+18). Al que le toca al azar le toca cumplirlo ante el grupo.
+- **🎲 Mecánica de Retos sin Votación**: En los modos de Retos no se vota; el juego selecciona a una persona al azar en cada ronda. El anfitrión registra si el elegido ha cumplido la prueba (+1 punto) o se ha rajado (castigo/chupito), pudiendo cambiar de persona al azar si es necesario.
 - **✍️ Preguntas Personalizadas**: El anfitrión puede escribir preguntas propias en cualquier momento de la partida.
 - **⚔️ Sistema de Desempate Automático**: Si dos o más jugadores empatan en votos, se activa una ronda relámpago exclusiva para desempatar entre los afectados.
 - **⏱️ Temporizador y Reglas Configurables**:
@@ -73,7 +75,11 @@ const Q = {
     "¿Quién es más probable que...",
     "¿Quién volvería con su peor ex..."
   ],
-  retos: [
+  retos_colegas: [
+    "Haz un duelo de miradas fijas con quien tengas enfrente...",
+    "Deja que una persona del sexo opuesto te cambie el peinado..."
+  ],
+  retos_fuertes: [
     "Besa en el cuello a la persona a tu derecha...",
     "Quítate dos prendas de ropa o..."
   ]
