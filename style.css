@@ -28,7 +28,14 @@ body[data-mode="fuerte"] {
   --line: #451a2d;
 }
 
-body[data-mode="retos"] {
+body[data-mode="retos_colegas"] {
+  --pri: #f59e0b;
+  --pri-glow: rgba(245, 158, 11, 0.45);
+  --pri-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ec4899 100%);
+  --line: #3d2b15;
+}
+
+body[data-mode="retos_fuertes"], body[data-mode="retos"] {
   --pri: #ec4899;
   --pri-glow: rgba(236, 72, 153, 0.5);
   --pri-gradient: linear-gradient(135deg, #ec4899 0%, #d946ef 50%, #f43f5e 100%);
@@ -472,6 +479,13 @@ button.sec {
   margin-bottom: 8px;
 }
 
+.seg.seg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .seg button {
   flex: 1;
   min-width: 0;
@@ -645,6 +659,97 @@ button.sec {
 
 @keyframes pop {
   from { transform: scale(0.9); opacity: 0; }
+}
+
+/* Retos / Dares Elements */
+.dare-banner {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  text-align: center;
+  margin: 12px 0 16px;
+  transition: all 0.3s ease;
+}
+
+.dare-banner.is-me {
+  border-color: var(--pri);
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.18) 0%, rgba(24, 20, 40, 0.95) 100%);
+  box-shadow: 0 0 25px var(--pri-glow);
+  animation: dare-pulse-anim 2s infinite ease-in-out;
+}
+
+.dare-pulse {
+  font-family: 'Bungee', Impact, sans-serif;
+  font-size: 26px;
+  color: #ffffff;
+  text-shadow: 0 0 14px var(--pri);
+  letter-spacing: 1px;
+}
+
+.dare-sub {
+  font-size: 14px;
+  color: var(--mute);
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.dare-target-name {
+  font-family: 'Bungee', Impact, sans-serif;
+  font-size: 26px;
+  color: var(--bone);
+  margin: 6px 0 2px;
+}
+
+.dare-target-name small {
+  font-size: 16px;
+  color: var(--mute);
+  font-family: 'Nunito', sans-serif;
+}
+
+.dare-q {
+  border: 2px solid var(--pri) !important;
+  box-shadow: 0 0 22px var(--pri-glow) !important;
+}
+
+.chip.chip-target {
+  border-color: var(--pri) !important;
+  background: var(--pri-glow) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  box-shadow: 0 0 10px var(--pri-glow);
+}
+
+.btn-dare-ok {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border-color: #10b981 !important;
+  color: #ffffff !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  padding: 15px !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35) !important;
+}
+
+.btn-dare-fail {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #fca5a5 !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  font-weight: 800 !important;
+}
+
+.btn-dare-fail:hover {
+  background: rgba(239, 68, 68, 0.22) !important;
+}
+
+@keyframes dare-pulse-anim {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px var(--pri-glow);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 35px var(--pri-glow);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

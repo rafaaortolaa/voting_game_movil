@@ -1,8 +1,9 @@
-# 🔥 Banco Completo del Juego: 755 Cartas
+# 🔥 Banco Completo del Juego: 905 Cartas
 
 - **😄 Modo Colegueo**: 300 preguntas (humor, anécdotas y piques entre amigos)
 - **🌶️ Modo Fuerte**: 305 preguntas (verdades sin filtro, infidelidades y salseo)
-- **🔥 Modo Retos**: 150 retos (pruebas atrevidas, fuertes y de alto voltaje sexual)
+- **🎉 Modo Retos Colegas**: 150 retos (pruebas divertidas, risas y fiesta para chicos y chicas sin pasarse de fuertes)
+- **🔥 Modo Retos Fuertes**: 150 retos (pruebas atrevidas, besos, prendas y alto voltaje)
 - **⚡ Formato corto y directo**: Diseñado para leerse en segundos desde el móvil en mitad de la fiesta.
 
 ---
@@ -622,7 +623,162 @@
 
 ---
 
-## 3. 🔥 MODO RETOS (150 Retos Fuertes y Sexuales)
+## 3. 🎉 MODO RETOS COLEGAS (150 Retos para Chicos y Chicas - Risas y Fiesta)
+
+1. Haz un duelo de miradas fijas de 30 segundos con la persona que tengas enfrente. El primero que pestañee o se ría se bebe un chupito.
+2. Deja que una persona del sexo opuesto te cambie el peinado como quiera durante las próximas dos rondas.
+3. Haz una llamada con altavoz a un contacto al azar y dile con voz seria y misteriosa: 'Lo sé todo, tenemos que hablar mañana' y cuelga inmediatamente.
+4. Hazle un piropo cursi y exagerado de telenovela a quien elija el grupo mirándole fijamente a los ojos.
+5. Intercambia tu calzado con la persona a tu izquierda y juega las siguientes dos rondas con sus zapatos.
+6. Hazle un masaje de hombros relajante de 20 segundos a la persona que elija la mesa.
+7. Elige a alguien del sexo opuesto y haced una reverencia formal y un baile de vals ridículo durante 15 segundos.
+8. Lleva a caballito a la persona que elija el grupo durante una vuelta completa a la mesa.
+9. Choca las manos con todos los de la sala diciendo un cumplido sincero a cada uno sin repetir.
+10. Pasa una servilleta o carta usando solo la barbilla y el pecho con la persona a tu lado sin usar las manos.
+11. Haz 10 sentadillas mientras la persona frente a ti te hace muecas para intentar que te rías.
+12. Cámbiale una prenda exterior (chaqueta, sudadera o gorra) a alguien del grupo y póntela hasta el final de la partida.
+13. Haz un pulso de brazos con la persona que tengas enfrente usando tu mano no dominante.
+14. Pídele matrimonio de rodillas a alguien de la mesa con un discurso ultra dramático de 20 segundos.
+15. Dile a la persona a tu derecha tres cosas que te caen genial de ella y una manía suya que no soportas (en plan risas).
+16. Elige a alguien y haced una pose de pareja de portada de revista de moda durante 15 segundos sin moveros.
+17. Deja que alguien del grupo te pinte un bigote o lunar gracioso con un boli o lápiz de ojos.
+18. Dale la mano a la persona a tu izquierda y no os soltéis durante las próximas dos rondas de juego.
+19. Pasa un cubito de hielo de tu mano a la mano de otro jugador usando únicamente los codos.
+20. Hazle cosquillas a la persona a tu derecha durante 5 segundos seguidos.
+21. Enseña tu tiempo de uso de pantalla del móvil hoy delante de todos sin censura.
+22. Muestra cuál es la foto más antigua que conservas en la galería de tu teléfono.
+23. Deja que la persona a tu izquierda mande un emoji aleatorio al tercer chat abierto de tu WhatsApp.
+24. Lee en voz alta las últimas dos notas que tengas apuntadas en la app de notas del móvil.
+25. Enseña tu fondo de pantalla de bloqueo e inicio y explica la historia detrás de ellos.
+26. Muestra las tres primeras cuentas que te salen en el buscador reciente de Instagram.
+27. Lee en voz alta el último mensaje de texto o WhatsApp que te ha mandado tu madre o tu padre.
+28. Muestra el último meme o vídeo gracioso que hayas guardado o descargado en el móvil.
+29. Manda un audio diciendo '¡Buenas noches mi amor!' al grupo de WhatsApp de tus amigos o compañeros.
+30. Enseña las últimas tres canciones que has escuchado en tu cuenta de Spotify o YouTube.
+31. Deja que el grupo elija una foto normal y divertida de tu carrete y súbela a tus historias de Instagram.
+32. Muestra a la mesa cuántas fotos y vídeos tienes en total guardadas en la galería.
+33. Llama a un amigo que no esté aquí y dile que te has teñido el pelo de verde fosforito a ver qué te responde.
+34. Lee en voz alta el último correo electrónico o notificación de compra que te haya llegado.
+35. Enseña tu última compra por internet (Amazon, Shein, Wallapop, etc.) y di cuánto te costó.
+36. Manda un sticker absurdo al último grupo de WhatsApp en el que hayas participado.
+37. Muestra tu historial de llamadas perdidas de hoy o de ayer delante de todos.
+38. Deja que alguien del grupo te escriba la frase de estado de WhatsApp durante los próximos 10 minutos.
+39. Enseña tu foto de perfil más antigua de Facebook o Instagram y cómo vestías.
+40. Muestra qué alarmas tienes puestas en el móvil para despertarte por las mañanas.
+41. Imita a alguien de este grupo durante 30 segundos sin decir su nombre hasta que los demás lo adivinen.
+42. Habla con acento argentino, mexicano o francés durante las próximas dos rondas. Si se te escapa tu acento, bebes.
+43. Haz como si fueras un comentarista de fútbol retransmitiendo en directo todo lo que está pasando en la sala.
+44. Haz una pasarela de modelos por el medio de la sala con cara de máxima seriedad y pose final de diva.
+45. Finge que estás en una entrevista de trabajo para ser espía y defiende por qué eres el mejor candidato.
+46. Haz tu mejor imitación de un camarero súper estresado tomándole la comanda a todos los de la mesa.
+47. Haz el sonido de tres animales distintos de forma hiperrealista y exagerada.
+48. Inventa un rap o rima improvisada sobre dos personas de la mesa durante 15 segundos.
+49. Quédate como una estatua durante 30 segundos sin mover un solo músculo mientras los demás te hacen muecas.
+50. Canta en playback con dramatismo total el estribillo de una canción mítica que elija el grupo.
+51. Finge que lloras de emoción durante 10 segundos como si acabaras de ganar un premio Óscar.
+52. Haz una imitación de un influencer de Instagram recomendando un objeto absurdo de la habitación.
+53. Habla susurrando como si estuvierais en una biblioteca secreta durante las siguientes dos rondas.
+54. Haz como si estuvieras en un anuncio de teletienda vendiendo las zapatillas de quien tengas enfrente.
+55. Imita el baile típico de tus padres o tíos en una boda familiar durante 15 segundos.
+56. Haz un discurso motivacional absurdo como si fuera la final de la Champions League durante 20 segundos.
+57. Finge una discusión de pareja telenovelesca y ridícula con la persona que tengas a tu izquierda.
+58. Haz de mimo durante un minuto completo: solo puedes comunicarte por gestos y señas.
+59. Baila como si estuvieras en una rave a las 7 de la mañana durante 15 segundos sin música.
+60. Cuenta un chiste tan malo que dé vergüenza ajena. Si nadie se ríe, te bebes un trago.
+61. Bébete un trago de tu copa sin usar las manos, directamente desde la mesa inclinando el vaso.
+62. Mantén un tapón o moneda en tu frente durante 20 segundos mirando al techo sin que se te caiga.
+63. Intenta decir el abecedario al revés empezando por la Z. Por cada fallo o duda de más de 3 segundos, un trago.
+64. Equilibra una cuchara o boli en tu nariz durante 15 segundos sin tocarlo con las manos.
+65. Ponte de pie a la pata coja durante toda la siguiente ronda sin apoyarte en nada.
+66. Haz un brindis improvisado y súper emotivo como si fuera la boda ficticia de dos personas de la mesa.
+67. Aguanta un cubito de hielo en el puño cerrado hasta que se derrita o bebe un trago largo.
+68. Ponte una chaqueta o sudadera del revés (la capucha o cremallera hacia atrás) durante dos rondas.
+69. Juega a 'piedra, papel o tijera' con tres personas seguidas. Por cada derrota, bebes un trago.
+70. Intenta no decir las palabras 'SÍ', 'NO' y 'QUÉ' durante las próximas dos rondas. Cada fallo, un sorbo.
+71. Tómate tu bebida con pajita o a sorbitos diminutos como si fueras un pajarito durante toda la siguiente ronda.
+72. Haz 15 saltos de tijera gritando el nombre de una fruta distinta en cada salto.
+73. Ponte de rodillas y camina como un pingüino dando una vuelta completa a la mesa.
+74. Intenta tocarte la punta de la nariz con la lengua durante 10 segundos delante de todos.
+75. Haz la croqueta por el suelo de la sala de un lado a otro con energía.
+76. Choca los cinco con el pie con las dos personas que tengas a los lados.
+77. Bebe un trago de la copa de la persona que tengas a tu derecha con su permiso.
+78. Aguanta la respiración durante 25 segundos mientras todos te miran fijamente.
+79. Haz una torre con 4 vasos o latas vacías en menos de 15 segundos sin que se derrumbe.
+80. Intenta hacer malabares con tres objetos pequeños (frutas, tapones, bolas de papel) durante 10 segundos.
+81. Cuenta cuál ha sido la cita más desastrosa, aburrida o incómoda que has tenido en tu vida.
+82. Di quién de esta sala crees que tardaría menos en ser arrestado por una tontería y explica por qué.
+83. Confiesa la mayor borrachera o momento de 'tierra trágame' que hayas vivido jamás con amigos.
+84. Cuenta qué manía o costumbre rara tienes en tu casa que a los demás les parecería de locos.
+85. Di cuál es la mentira más tonta que has dicho para librarte de quedar con alguien y quedarte en el sofá.
+86. Confiesa cuál era tu amor platónico o crush famoso más ridículo cuando eras pequeño o adolescente.
+87. Di a quién de la mesa le confiarías cuidar a tu perro o las llaves de tu casa y a quién jamás en la vida.
+88. Cuenta qué es lo más cutre o tacaño que has hecho en tu vida para no pagar o ahorrar pasta.
+89. Confiesa la compra más absurda e inútil que has hecho por internet y que tienes guardada en un cajón.
+90. Cuenta la bronca más legendaria que te hayan echado tus padres al llegar a casa de fiesta.
+91. Di qué plato de comida odias a muerte y que todo el mundo parece amar.
+92. Confiesa cuál ha sido tu peor corte de pelo o look de moda del que ahora te avergüenzas profundamente.
+93. Cuenta si alguna vez te has colado en algún sitio sin pagar (un concierto, metro, festival, cine).
+94. Di qué rumor falso o malentendido inventaron sobre ti en el colegio o instituto.
+95. Confiesa cuál es la canción secreta que te encanta cantar a gritos a solas pero que no admitirías en público.
+96. Lee en voz alta el último audio de WhatsApp que te haya llegado transcribiéndolo o escuchándolo.
+97. Pídele a quien tengas enfrente que te lea las líneas de la mano y te adivine el futuro.
+98. Haz como si fueras un robot: solo puedes moverte y hablar de forma robótica durante la siguiente ronda.
+99. Deja que la persona a tu derecha te dé de beber un sorbo de tu propia copa.
+100. Finge que recibes una llamada de un famoso muy top y mantén la conversación durante 20 segundos delante de todos.
+101. Ponte de espaldas a la mesa y adivina quién te toca la espalda solo por el tacto.
+102. Haz un dúo musical a capela con la persona del sexo opuesto que elija el grupo cantando una canción infantil.
+103. Dibuja un retrato rápido en servilleta de papel de la persona que tengas a tu derecha en menos de 30 segundos.
+104. Confiesa cuál es el trabajo de tus sueños que nunca tendrías por pura pereza o vergüenza.
+105. Bebe un trago con los brazos entrelazados con la persona que tengas a tu derecha.
+106. Di tres adjetivos positivos sobre cada una de las personas sentadas en la mesa en menos de 45 segundos.
+107. Finge que eres el presentador de un programa de televisión sensacionalista y entrevista a quien tengas al lado.
+108. Ponte dos cubitos de hielo en los calcetines durante 30 segundos o bebe dos tragos seguidos.
+109. Haz una imitación de cómo se ríe cada una de las personas de esta sala.
+110. Muestra qué aplicaciones tienes abiertas ahora mismo en segundo plano en el móvil.
+111. Cuenta la anécdota de cómo y cuándo conociste a la primera persona de esta mesa con la que hablaste.
+112. Intenta hacer la vertical apoyado contra la pared durante 10 segundos o haz 10 sentadillas.
+113. Deja que el grupo te ponga un apodo absurdo y todos deben llamarte así durante el resto del juego.
+114. Haz una llamada ficticia al 112 avisando de que hay una invasión extraterrestre en el salón.
+115. Finge un ataque de risa incontrolable durante 15 segundos sin parar.
+116. Ponte gafas de sol puestas (o pide unas prestadas) y juega las próximas tres rondas de incógnito.
+117. Confiesa si alguna vez has roto algo caro en casa de un amigo y te has hecho el loco para no pagarlo.
+118. Haz como que eres un guía turístico enseñando los 'monumentos históricos' que hay en la habitación.
+119. Intenta no parpadear durante 20 segundos mientras te graban en vídeo con la cámara frontal.
+120. Dale un abrazo de oso muy apretado a la persona más alta de la habitación durante 10 segundos.
+121. Pide perdón públicamente a alguien de la mesa por algo que le hiciste hace tiempo (aunque sea una tontería).
+122. Muestra la última foto que hiciste con la cámara de tu móvil (sin trampa ni cartón).
+123. Haz 5 flexiones en el suelo aplaudiendo en cada subida (o flexiones normales si te cuesta).
+124. Elige a alguien del grupo y haced un saludo secreto de manos complejo inventado en 20 segundos.
+125. Finge que eres un catador profesional de vinos y haz una cata detallada y absurda de tu bebida actual.
+126. Confiesa qué superstición o manía absurda sigues cumpliendo a rajatabla.
+127. Canta el estribillo de una canción cambiando todas las vocales por la letra 'A'.
+128. Deja que la persona a tu izquierda elija tu foto de perfil de WhatsApp durante las próximas 2 horas.
+129. Haz una carrera a gatas contra la persona que elija el grupo desde una punta de la sala a la otra.
+130. Confiesa qué es lo más asqueroso que has llegado a comer por una apuesta o despiste.
+131. Haz como si fueras un entrenador personal y pon a toda la mesa a hacer estiramientos durante 20 segundos.
+132. Di un trabalenguas rápido tres veces seguidas sin equivocarte. Si fallas, te toca beber.
+133. Intercambia tu teléfono con la persona frente a ti y busca qué fondo de pantalla tiene.
+134. Imita la risa de un villano de dibujos animados a pleno pulmón durante 10 segundos.
+135. Pídele a alguien del sexo opuesto que te enseñe su mejor paso de baile y replícalo de inmediato.
+136. Confiesa cuál ha sido el peor regalo que te han hecho en tu cumpleaños y qué hiciste con él.
+137. Haz el pino puente o intenta tocarte las puntas de los pies sin doblar las rodillas durante 15 segundos.
+138. Llama a un restaurante o pizzería y pregunta si la masa de la pizza se puede pedir en forma de estrella.
+139. Finge que eres un cantante de ópera y di todo lo que quieras decir cantando durante la siguiente ronda.
+140. Di el nombre de 5 capitales europeas en menos de 10 segundos sin dudar ni equivocarte.
+141. Deja que te hagan cosquillas en las plantas de los pies durante 10 segundos sin moverte ni patear.
+142. Haz un brindis con todos los presentes chocando los vasos al mismo tiempo en el centro.
+143. Confiesa si alguna vez te has ido de un bar o restaurante sin pagar la cuenta por error o queriendo.
+144. Imita el acento de tu serie de televisión favorita durante las próximas dos preguntas.
+145. Ponte de rodillas y haz una reverencia a cada uno de los jugadores presentes.
+146. Muestra qué última canción le diste a 'Me gusta' en Spotify o TikTok.
+147. Haz una foto grupal graciosa con tu móvil donde todos salgan haciendo caras raras.
+148. Confiesa cuál ha sido la mayor locura que has hecho por amor o por gustarle a alguien.
+149. Deja que la persona a tu izquierda decida si bebes un trago de agua, de tu copa o haces 10 abdominales.
+150. Grita '¡Viva este grupo de amigos!' por la ventana o en mitad del salón con toda tu energía.
+
+---
+
+## 4. 🔥 MODO RETOS FUERTES (150 Retos Atrevidos y de Alto Voltaje)
 
 1. Besa en el cuello a la persona a tu derecha durante 5 segundos.
 2. Quítate dos prendas de ropa o bébete dos chupitos seguidos.
